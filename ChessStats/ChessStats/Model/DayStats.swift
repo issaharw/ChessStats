@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 struct DayStats: Identifiable {
     let date: Date
     let numberOfGames: Int

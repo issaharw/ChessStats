@@ -21,12 +21,6 @@ struct GameArchives: View {
             }
             .onAppear {
                 statsManager.getGameArchives()
-                chessData.$archives.sink { newArchives in
-                    print("Got sink: \(newArchives.count)")
-                    if (!newArchives.isEmpty) {
-                        statsManager.buildDaysStats(monthArchive: newArchives.first!)
-                    }
-                }
             }
             .navigationTitle("Months Played")
             .toolbar {

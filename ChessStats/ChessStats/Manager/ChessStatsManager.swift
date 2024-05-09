@@ -13,9 +13,11 @@ import SwiftData
 class ChessStatsManager: ObservableObject {
     
     var chessData: ChessData
+    var persistenceManager: PersistenceManager
     
-    init(chessData: ChessData) {
+    init(chessData: ChessData, persistenceManager: PersistenceManager) {
         self.chessData = chessData
+        self.persistenceManager = persistenceManager
     }
     
     func getGameArchives() {
@@ -46,7 +48,6 @@ class ChessStatsManager: ObservableObject {
                     self.chessData.dayStatsByMonth[monthArchive] = self.buildDayStats(gamesByDate: gamesByDate, allGames: userGames).sorted { $0.date > $1.date }
                 }
                 print("Day UI Shown: \(now() - received). Request: \(received - start)")
-
             }
             else if let error = error {
                 print("error: \(error.localizedDescription)")

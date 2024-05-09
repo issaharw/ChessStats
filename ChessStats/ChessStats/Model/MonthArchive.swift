@@ -23,14 +23,13 @@ struct MonthArchive: Identifiable, Hashable {
         archiveUrl
     }
     
-    func isCurrentMonth() -> Bool {
-        let currentDate = Date()
+    func isInMonth(date: Date) -> Bool {
         var calendar = Calendar.current
         calendar.timeZone = TimeZone(identifier: "Asia/Jerusalem")!
 
         // Extract the year and month from the current date
-        let year = String(calendar.component(.year, from: currentDate))
-        let month = calendar.component(.month, from: currentDate)
+        let year = String(calendar.component(.year, from: date))
+        let month = calendar.component(.month, from: date)
         return year == self.year && month == self.monthIndex
     }
 }

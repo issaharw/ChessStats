@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftData
 
 let DRAW_RESULTS = ["agreed", "repetition", "stalemate", "insufficient", "50move", "timevsinsufficient"]
 
