@@ -8,21 +8,21 @@
 import SwiftUI
 
 struct MonthView: View {
+    @EnvironmentObject private var chessData: ChessData
+    @EnvironmentObject private var statsManager: ChessStatsManager
     let monthArchive: MonthArchive
-    @State var daysStats: [DayStats] = []
 
     var body: some View {
         NavigationStack {
-            List(daysStats) { dayStat in
+            List(chessData.dayStatsByMonth[monthArchive] ?? []) { dayStat in
                 NavigationLink(destination: DayView(dayStats: dayStat)){
                     DayCardView(dayStats: dayStat)
                 }
-                .listRowBackground(Color("sky"))
             }
             .onAppear {
-                ChessStatsManager.shared.buildDaysStats(monthArchiveUrl: monthArchive.archiveUrl, games: $daysStats)
+                statsManager.buildDaysStats(monthArchive: monthArchive)
             }
-            .navigationTitle("Day Statistics")
+            .navigationTitle("\(monthArchive.month), \(String(monthArchive.year))")
             .toolbar {
                 Button(action: {}) {
                     Image(systemName: "plus")

@@ -10,16 +10,22 @@ import SwiftUI
 import SwiftData
 
 
-struct ChessStatsManager {
+class ChessStatsManager: ObservableObject {
     
-    static var shared = ChessStatsManager()
+    var chessData: ChessData
     
-    func getGameArchives(archivesBinding: Binding<[MonthArchive]>) {
+    init(chessData: ChessData) {
+        self.chessData = chessData
+    }
+    
+    func getGameArchives() {
         let start = now()
         sendRequest(urlStr: "https://api.chess.com/pub/player/issaharw/games/archives") { (data, error) in
             let received = now()
             if let archives = data?["archives"] as? [String] {
-                archivesBinding.wrappedValue = archives.sorted(by: >).map { url in MonthArchive(url: url) }
+                DispatchQueue.main.async {
+                    self.chessData.archives = archives.sorted(by: >).map { url in MonthArchive(url: url) }
+                }
                 print("UI Shown: \(now() - received). Request: \(received - start)")
             }
             else if let error = error {
@@ -28,15 +34,17 @@ struct ChessStatsManager {
         }
     }
     
-    func buildDaysStats(monthArchiveUrl: String, games: Binding<[DayStats]>) {
+    func buildDaysStats(monthArchive: MonthArchive) {
         let start = now()
-        sendRequest(urlStr: monthArchiveUrl) { (data, error) in
+        sendRequest(urlStr: monthArchive.archiveUrl) { (data, error) in
             let received = now()
             if let gamesArray = data?["games"] as? [[String: Any]] {
                 let rawGames = parseGames(from: gamesArray)
                 let userGames = rawGames.map { game in UserGame.fromChessGame(game: game) }.sorted { $0.endTime < $1.endTime }
-                let gamesByDate = groupGamesByDay(games: userGames)
-                games.wrappedValue = buildDayStats(gamesByDate: gamesByDate, allGames: userGames).sorted { $0.date > $1.date }
+                let gamesByDate = self.groupGamesByDay(games: userGames)
+                DispatchQueue.main.async {
+                    self.chessData.dayStatsByMonth[monthArchive] = self.buildDayStats(gamesByDate: gamesByDate, allGames: userGames).sorted { $0.date > $1.date }
+                }
                 print("Day UI Shown: \(now() - received). Request: \(received - start)")
 
             }
@@ -50,13 +58,10 @@ struct ChessStatsManager {
         var groupedGames = [Date: [UserGame]]()
 
         for game in games {
-            let date = Date(timeIntervalSince1970: TimeInterval(game.endTime))
-            let adjustedDate = date.adjustedForNightGames()
-
-            if groupedGames[adjustedDate] != nil {
-                groupedGames[adjustedDate]?.append(game)
+            if groupedGames[game.datePlayed] != nil {
+                groupedGames[game.datePlayed]?.append(game)
             } else {
-                groupedGames[adjustedDate] = [game]
+                groupedGames[game.datePlayed] = [game]
             }
         }
 

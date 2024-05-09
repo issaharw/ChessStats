@@ -8,18 +8,25 @@
 import SwiftUI
 
 struct GameArchives: View {
-    @State private var gameArchives: [MonthArchive] = []
-
+    @EnvironmentObject private var chessData: ChessData
+    @EnvironmentObject private var statsManager: ChessStatsManager
+    
+    
     var body: some View {
         NavigationStack {
-            List(gameArchives) { archive in
+            List(chessData.archives) { archive in
                 NavigationLink(destination: MonthView(monthArchive: archive)){
                     MonthCardView(monthArchive: archive)
                 }
-                .listRowBackground(Color("sky"))
             }
             .onAppear {
-                ChessStatsManager.shared.getGameArchives(archivesBinding: $gameArchives)
+                statsManager.getGameArchives()
+                chessData.$archives.sink { newArchives in
+                    print("Got sink: \(newArchives.count)")
+                    if (!newArchives.isEmpty) {
+                        statsManager.buildDaysStats(monthArchive: newArchives.first!)
+                    }
+                }
             }
             .navigationTitle("Months Played")
             .toolbar {

@@ -8,11 +8,13 @@
 import Foundation
 import SwiftData
 
+let DRAW_RESULTS = ["agreed", "repetition", "stalemate", "insufficient", "50move", "timevsinsufficient"]
 
-@Model
+
 struct UserGame: Identifiable {
     let url: String
     let endTime: Int
+    let datePlayed: Date
     let pgn: String
     let timeControl: String
     let timeClass: String
@@ -20,10 +22,12 @@ struct UserGame: Identifiable {
     let result: String
     let rating: Int
     let opponentUsername: String
+    let score: Double
     
-    init(url: String, endTime: Int, pgn: String, timeControl: String, timeClass: String, color: String, result: String, rating: Int, opponentUsername: String) {
+    init(url: String, endTime: Int, datePlayed: Date, pgn: String, timeControl: String, timeClass: String, color: String, result: String, rating: Int, opponentUsername: String) {
         self.url = url
         self.endTime = endTime
+        self.datePlayed = datePlayed
         self.pgn = pgn
         self.timeControl = timeControl
         self.timeClass = timeClass
@@ -31,6 +35,15 @@ struct UserGame: Identifiable {
         self.result = result
         self.rating = rating
         self.opponentUsername = opponentUsername
+        if (result == "win") {
+            score = 1
+        }
+        else if (DRAW_RESULTS.contains(result)) {
+            score = 0.5
+        }
+        else {
+            score = 0
+        }
     }
     
     var id: String {
@@ -38,10 +51,14 @@ struct UserGame: Identifiable {
     }
     
     static func fromChessGame(game: Game, username: String = "issaharw") -> UserGame {
+        let date = Date(timeIntervalSince1970: TimeInterval(game.endTime))
+        let adjustedDate = date.adjustedForNightGames()
+
         if game.white.username.lowercased() == username.lowercased() {
             return UserGame(
                 url: game.url,
                 endTime: game.endTime,
+                datePlayed: adjustedDate,
                 pgn: game.pgn,
                 timeControl: game.timeControl,
                 timeClass: game.timeClass,
@@ -55,6 +72,7 @@ struct UserGame: Identifiable {
             return UserGame(
                 url: game.url,
                 endTime: game.endTime,
+                datePlayed: adjustedDate,
                 pgn: game.pgn,
                 timeControl: game.timeControl,
                 timeClass: game.timeClass,

@@ -6,10 +6,66 @@
 //
 
 import SwiftUI
-//import Charts
+
 
 struct DayView: View {
     let dayStats: DayStats
+    var body: some View {
+        List {
+            ForEach(dayStats.gameTypeStats) { stat in
+                Section(header:
+                    Label {
+                    Text(stat.timeClass.capitalized)
+                    } icon: {
+                        Image("\(stat.timeClass)")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20, height: 20)
+                    }
+                ) {
+                    GamesBarView(userGames: stat.games)
+                }
+            }
+        }
+    }
+}
+
+#Preview {
+    DayView(dayStats: sampleDayStats)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//import Charts
+
+//struct DayView: View {
+//    let dayStats: DayStats
 //    private let minRating: Int
 //    private let maxRating: Int
 //    
@@ -19,8 +75,11 @@ struct DayView: View {
 //        maxRating = dayStats.gameTypeStats.first!.games.max {$0.rating < $1.rating}?.rating + 20 ?? dayStats.gameTypeStats.first!.endRating + 20
 //    }
 //    
-    var body: some View {
-        Text("Shalom")
+//    var body: some View {
+//        VStack {
+//            
+//        }
+//        Text("Shalom")
 //        Chart(dayStats.gameTypeStats.first!.games) {
 //            LineMark(
 //                x: .value("Date", Date(timeIntervalSince1970: TimeInterval($0.endTime))),
@@ -34,9 +93,6 @@ struct DayView: View {
 //            AxisMarks(position: .leading, values: .stride(by: 10))
 //        }
 //        .chartYScale(domain: minRating..maxRating)
-    }
-}
+//    }
+//}
 
-#Preview {
-    DayView(dayStats: sampleDayStats)
-}

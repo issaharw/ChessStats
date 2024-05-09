@@ -6,10 +6,8 @@
 //
 
 import Foundation
-import SwiftData
 
-@Model
-struct MonthArchive: Identifiable {
+struct MonthArchive: Identifiable, Hashable {
     let archiveUrl: String
     let year: String
     private let monthIndex: Int
