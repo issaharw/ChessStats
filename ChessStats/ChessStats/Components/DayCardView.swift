@@ -16,7 +16,7 @@ struct DayCardView: View {
                 .accessibilityAddTraits(/*@START_MENU_TOKEN@*/.isHeader/*@END_MENU_TOKEN@*/)
             Spacer()
             VStack(alignment: .leading) {
-                Label("Total: \(dayStats.numberOfGames) Games", systemImage: "calendar")
+                Label("Total: \(dayStats.numberOfGames) Games", systemImage: "rectangle.checkered")
                 ForEach(dayStats.gameTypeStats) { stat in
                     Label {
                         Text("\(stat.startRating) - \(stat.endRating)  (Max: \(stat.highestRating))")
