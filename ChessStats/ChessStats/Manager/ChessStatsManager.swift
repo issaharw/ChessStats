@@ -13,11 +13,27 @@ import SwiftData
 class ChessStatsManager: ObservableObject {
     
     var chessData: ChessData
-    var persistenceManager: PersistenceManager
+//    var persistenceManager: PersistenceManager
     
-    init(chessData: ChessData, persistenceManager: PersistenceManager) {
+    init(chessData: ChessData) {
         self.chessData = chessData
-        self.persistenceManager = persistenceManager
+//        self.persistenceManager = persistenceManager
+    }
+    
+    func getProfileStat() {
+        let start = now()
+        sendRequest(urlStr: "https://api.chess.com/pub/player/issaharw/stats") { (data, error) in
+            let received = now()
+            if let profileStat = data {
+                DispatchQueue.main.async {
+                    self.chessData.profileStat = parseProfileStat(from: profileStat)!
+                }
+                print("UI Shown: \(now() - received). Request: \(received - start)")
+            }
+            else if let error = error {
+                print("error: \(error.localizedDescription)")
+            }
+        }
     }
     
     func getGameArchives() {

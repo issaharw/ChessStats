@@ -20,13 +20,32 @@ struct DayView: View {
                         Image("\(stat.timeClass)")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 20, height: 20)
+                            .frame(width: 25, height: 25)
                     }
                 ) {
-                    GamesBarView(userGames: stat.games)
+                    VStack {
+                        DayRatingCardView(stat: stat)
+                        Spacer()
+                        RatingChart(userGames: stat.games, startRating: stat.startRating)
+                        Spacer()
+                        GamesBarView(userGames: stat.games)
+                        Spacer()
+                        NavigationLink(destination: GamesView(games: stat.games)) {
+                            Label {
+                            Text("Show Games")
+                                .font(.headline)
+                            } icon: {
+                                Image("\(stat.timeClass)")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 25, height: 25)
+                            }
+                        }
+                    }
                 }
             }
         }
+        .navigationTitle(dayStats.date.formattedDate())
     }
 }
 

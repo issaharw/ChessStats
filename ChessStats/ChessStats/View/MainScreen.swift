@@ -7,33 +7,31 @@
 
 import SwiftUI
 
-struct GameArchives: View {
+struct MainScreen: View {
     @EnvironmentObject private var chessData: ChessData
     @EnvironmentObject private var statsManager: ChessStatsManager
     
-    
     var body: some View {
         NavigationStack {
-            List(chessData.archives) { archive in
-                NavigationLink(destination: MonthView(monthArchive: archive)){
-                    MonthCardView(monthArchive: archive)
-                }
+            Section(header: Label("Profile Stats", systemImage: "person")) {
+                ProfileStatView()
             }
-            .onAppear {
-                statsManager.getGameArchives()
-            }
-            .navigationTitle("Months Played")
-            .toolbar {
-                Button(action: {}) {
-                    Image(systemName: "plus")
+            Section(header: Label("Daily Stats", systemImage: "calendar")) {
+                List(chessData.archives) { archive in
+                    NavigationLink(destination: MonthView(monthArchive: archive)){
+                        MonthCardView(monthArchive: archive)
+                    }
                 }
-                .accessibilityLabel("New")
+                .listStyle(.plain)
+//                .background(Color.systemBackground)
+                .onAppear {
+                    statsManager.getGameArchives()
+                }
             }
         }
-
     }
 }
 
 #Preview {
-    GameArchives()
+    MainScreen()
 }

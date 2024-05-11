@@ -9,9 +9,10 @@ import SwiftUI
 
 import SwiftUI
 
-struct ContentView: View {
+struct ProfileStatView: View {
 
     @EnvironmentObject private var chessData: ChessData
+    @EnvironmentObject private var statsManager: ChessStatsManager
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -23,7 +24,10 @@ struct ContentView: View {
             }
             .padding()
         }
-        .background(Color.black.edgesIgnoringSafeArea(.all))
+//        .background(Color.black.edgesIgnoringSafeArea(.all))
+        .onAppear {
+            statsManager.getProfileStat()
+        }
     }
 }
 
@@ -33,29 +37,31 @@ struct GameStatCard: View {
 
     var body: some View {
         VStack {
-            Text(title.capitalized)
-                .font(.title3)
-                .foregroundColor(.white)
-                .padding(.top)
-
             Image(title)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .foregroundColor(.yellow)
-                .frame(width: 30, height: 30)
-                .padding()
+                .frame(width: 50, height: 50)
+                .padding(.top)
 
             Text(String(rating))
                 .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+
+            Text(title.capitalized)
+                .font(.title3)
+                .fontWeight(.bold)
                 .foregroundColor(.white)
                 .padding(.bottom)
+
         }
-        .frame(width: 120, height: 150)
+        .frame(width: 120, height: 140)
         .background(Color.gray.opacity(0.5))
         .cornerRadius(10)
     }
 }
 
 #Preview {
-    ContentView()
+    ProfileStatView()
 }

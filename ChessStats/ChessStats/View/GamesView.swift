@@ -8,11 +8,15 @@
 import SwiftUI
 
 struct GamesView: View {
+    
+    let games: [UserGame]
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Text("\(games.count) Games")
+            .font(.headline)
     }
 }
 
 #Preview {
-    GamesView()
+    GamesView(games: [])
 }

@@ -8,6 +8,7 @@
 import Foundation
 
 class ChessData: ObservableObject {
+    @Published var profileStat: ProfileStat? = nil
     @Published var archives: [MonthArchive] = []
     @Published var gamesByMonth: [MonthArchive: [UserGame]] = [:]
     @Published var dayStatsByMonth: [MonthArchive: [DayStats]] = [:]
