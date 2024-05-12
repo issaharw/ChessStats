@@ -58,6 +58,7 @@ class ChessStatsManager: ObservableObject {
                 DispatchQueue.main.async {
                     self.chessData.archives = archives.sorted(by: >).map { url in MonthArchive(url: url) }
                     self.persistenceManager.saveArchives(archives: self.chessData.archives)
+                    
                 }
                 print("UI Shown: \(now() - received). Request: \(received - start)")
             }
@@ -68,22 +69,18 @@ class ChessStatsManager: ObservableObject {
     }
     
     func buildDaysStats(monthArchive: MonthArchive) {
-        fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
-
-//        if (monthArchive.isCurrentMonth()) {
-//            fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
-//        }
-//        else { // past month
-//            let gamesPerMonthFromData = persistenceManager.fetchUserGames(forMonth: monthArchive)
-//            if (gamesPerMonthFromData.isEmpty) {
-//                fetchUserGames(monthArchive: monthArchive, alsoSaveToData: true)
-//            }
-//            else {
-//                print("Get Data from SwiftData, so not fetching.")
-//                print("For Month: \(monthArchive.year)/\(monthArchive.month) I got from SwiftData \(gamesPerMonthFromData.count) Games")
-//                buildDaysStats(monthArchive: monthArchive, games: gamesPerMonthFromData)
-//            }
-//        }
+        if (monthArchive.isCurrentMonth()) {
+            fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
+        }
+        else { // past month
+            let dayStatsByMonth = self.chessData.dayStatsByMonth[monthArchive]
+            if (dayStatsByMonth != nil && !dayStatsByMonth!.isEmpty) {
+                print("fetched day stats by month. No need to fetch again")
+            }
+            else {
+                fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
+            }
+        }
     }
     
     private func fetchUserGames(monthArchive: MonthArchive, alsoSaveToData: Bool) {
