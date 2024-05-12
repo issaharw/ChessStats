@@ -53,42 +53,31 @@ func sendRequest(urlStr: String, completion: @escaping ([String: Any]?, Error?) 
 }
 
 func sendTwoRequestsAndGetBothData(firstUrl: String, secondUrl: String, completion: @escaping ([Data]?, Error?) -> Void) {
-    let url1 = URL(string: "https://api.example.com/endpoint1")!
-    let url2 = URL(string: "https://api.example.com/endpoint2")!
-
-    // Create publishers for each HTTP request
-    let publisher1 = URLSession.shared.dataTaskPublisher(for: url1)
-        .map(\.data)
-        .catch { _ in Just(Data()) } // Handle errors or provide a default value
-
-    let publisher2 = URLSession.shared.dataTaskPublisher(for: url2)
-        .map(\.data)
-        .catch { _ in Just(Data()) } // Handle errors or provide a default value
-
-    // Array to collect responses
-    var responses: [Data] = []
-
-    // Subscription set
+    print("starting two requestss")
     var cancellables = Set<AnyCancellable>()
 
-    // Merge publishers
-    publisher1.merge(with: publisher2)
-        .sink(receiveCompletion: { completion in
-             switch completion {
-             case .finished:
-                 print("All requests completed") // All individual request streams completed
-             case .failure(let error):
-                 print("Error: \(error)") // Handle error scenario
-             }
-         }, receiveValue: { data in
-             // Collect each piece of data
-             responses.append(data)
-             // Check if all responses are collected
-             if responses.count == 2 {
-                 print("Received all responses")
-                 completion(responses, nil)
-             }
-         })
-         .store(in: &cancellables)
+    let publisher1 = URLSession.shared.dataTaskPublisher(for: URL(string: firstUrl)!)
+        .map(\.data)
+        .catch { _ in Just(Data()) } // Handle errors
 
-}
+    let publisher2 = URLSession.shared.dataTaskPublisher(for: URL(string: secondUrl)!)
+        .map(\.data)
+        .catch { _ in Just(Data()) } // Handle errors
+
+    print("before zip")
+    publisher1.zip(publisher2)
+        .sink(receiveCompletion: { completion in
+            print("got some data")
+            switch completion {
+            case .finished:
+                print("finished requests")
+                // Requests completed
+                break
+            case .failure(let error):
+                print("Error: \(error)")
+            }
+        }, receiveValue: { (data1, data2) in
+            print("Received both responses")
+            // Process data1 and data2 here
+        })
+        .store(in: &cancellables)}
