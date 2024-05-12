@@ -50,6 +50,10 @@ class MonthArchive: Identifiable, Hashable {
     }
 }
 
+class MonthArchives: Codable {
+    let archives: [String]
+}
+
 private func getMonthAndYearOfArchive(archiveUrl: String) -> (String, Int) {
     let components = archiveUrl.split(separator: "/")
     if components.count >= 2 {

@@ -14,6 +14,7 @@ struct ChessStatsApp: App {
     var chessData: ChessData
     var chessStatManager: ChessStatsManager
     var persistenceManager: PersistenceManager
+    var httpUtil: HttpUtil
 
     var modelContainer: ModelContainer = {
         let schema = Schema([
@@ -32,8 +33,9 @@ struct ChessStatsApp: App {
 
     init() {
         self.chessData = ChessData()
+        self.httpUtil = HttpUtil()
         self.persistenceManager = PersistenceManager(modelContext: modelContainer.mainContext)
-        self.chessStatManager = ChessStatsManager(chessData: chessData, persistenceManager: persistenceManager)
+        self.chessStatManager = ChessStatsManager(chessData: chessData, httpUtil: httpUtil, persistenceManager: persistenceManager)
         
         self.chessStatManager.getProfileStat()
         self.chessStatManager.getGameArchives()

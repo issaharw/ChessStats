@@ -13,12 +13,21 @@ import SwiftData
 class ChessStatsManager: ObservableObject {
     
     var chessData: ChessData
+    var httpUtil: HttpUtil
     var persistenceManager: PersistenceManager
     
-    init(chessData: ChessData, persistenceManager: PersistenceManager) {
+    init(chessData: ChessData, httpUtil: HttpUtil, persistenceManager: PersistenceManager) {
         self.chessData = chessData
+        self.httpUtil = httpUtil
         self.persistenceManager = persistenceManager
     }
+    
+    func testing() {
+        httpUtil.sendTwoRequestsAndGetBothData(firstUrl: "https://api.chess.com/pub/player/issaharw/games/2024/05", secondUrl: "https://api.chess.com/pub/player/issaharw/games/2024/04") { data, error in
+            print("got data from may and april")
+        }
+    }
+    
     
     func getProfileStat() {
         let start = now()
@@ -28,11 +37,11 @@ class ChessStatsManager: ObservableObject {
             chessData.profileStat = profileStat
         }
         
-        sendRequest(urlStr: "https://api.chess.com/pub/player/issaharw/stats") { (data, error) in
+        httpUtil.fetchData(ofType: ProfileStatRecord.self, from: "https://api.chess.com/pub/player/issaharw/stats") { (data, error) in
             let received = now()
             if let profileStat = data {
                 DispatchQueue.main.async {
-                    self.chessData.profileStat = parseProfileStat(from: profileStat)!
+                    self.chessData.profileStat = ProfileStat(from: profileStat)
                     self.persistenceManager.saveProfileStat(stat: self.chessData.profileStat!)
                 }
                 print("UI Shown: \(now() - received). Request: \(received - start)")
@@ -52,11 +61,11 @@ class ChessStatsManager: ObservableObject {
             return
         }
         
-        sendRequest(urlStr: "https://api.chess.com/pub/player/issaharw/games/archives") { (data, error) in
+        httpUtil.fetchData(ofType: MonthArchives.self, from: "https://api.chess.com/pub/player/issaharw/games/archives") { (data, error) in
             let received = now()
-            if let archives = data?["archives"] as? [String] {
+            if let archivesFromChessCom = data {
                 DispatchQueue.main.async {
-                    self.chessData.archives = archives.sorted(by: >).map { url in MonthArchive(url: url) }
+                    self.chessData.archives = archivesFromChessCom.archives.sorted(by: >).map { url in MonthArchive(url: url) }
                     self.persistenceManager.saveArchives(archives: self.chessData.archives)
                     
                 }
@@ -85,12 +94,12 @@ class ChessStatsManager: ObservableObject {
     
     private func fetchUserGames(monthArchive: MonthArchive, alsoSaveToData: Bool) {
         let start = now()
-        sendRequest(urlStr: monthArchive.archiveUrl) { (data, error) in
+        httpUtil.fetchData(ofType: Games.self, from: monthArchive.archiveUrl) { (data, error) in
             let received = now()
-            if let gamesArray = data?["games"] as? [[String: Any]] {
-                print("For Month: \(monthArchive.year)/\(monthArchive.month) I got from Chess.com \(gamesArray.count) Games")
-                let rawGames = parseGames(from: gamesArray)
-                let userGames = rawGames.map { game in UserGame.fromChessGame(game: game) }.sorted { $0.endTime < $1.endTime }
+            if let gamesObject = data {
+                print("For Month: \(monthArchive.year)/\(monthArchive.month) I got from Chess.com \(gamesObject.games.count) Games")
+//                let rawGames = parseGames(from: gamesArray)
+                let userGames = gamesObject.games.map { game in UserGame.fromChessGame(game: game) }.sorted { $0.endTime < $1.endTime }
                 self.buildDaysStats(monthArchive: monthArchive, games: userGames)
                 if (alsoSaveToData) {
                     DispatchQueue.main.async {

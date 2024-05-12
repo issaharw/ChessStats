@@ -226,34 +226,17 @@ let profileStatJson = """
     },
     "puzzle_rush": {}
 }
-"""
+""".data(using: .utf8)!
 
-let sampleProfileStat = parseProfileStat(from: parseExampleJson(json: profileStatJson))
+let sampleProfileStat = parseExampleJson(json: profileStatJson)!
 
-func parseExampleJson(json: String) -> [String: Any]{
-    if let jsonData = json.data(using: .utf8) {
-        do {
-            if let dictionary = try JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any] {
-                return dictionary
-            } else {
-                print("Could not cast JSON content as [String: Any]")
-            }
-        } catch {
-            print("Error parsing JSON: \(error)")
-        }
-    }
-    return [:]
-}
-
-func parseProfileStat(from json: [String: Any]) -> ProfileStat? {
+func parseExampleJson(json: Data) -> ProfileStat? {
+    let decoder = JSONDecoder()
     do {
-        let data = try JSONSerialization.data(withJSONObject: json)
-        let decoder = JSONDecoder()
-//        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        let record = try decoder.decode(ProfileStatRecord.self, from: data)
-        return ProfileStat(from: record)
+        let stat = try decoder.decode(ProfileStatRecord.self, from: json)
+        return ProfileStat(from: stat)
     } catch {
-        print("Error decoding JSON: \(error)")
+        print("Failed to decode JSON: \(error)")
         return nil
     }
 }
