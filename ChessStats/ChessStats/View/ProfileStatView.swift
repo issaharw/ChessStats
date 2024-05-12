@@ -16,17 +16,13 @@ struct ProfileStatView: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 20) {
+            HStack(spacing: 15) {
                 GameStatCard(title: "bullet", rating: chessData.profileStat?.bullet.last.rating ?? 0)
                 GameStatCard(title: "blitz", rating: chessData.profileStat?.blitz.last.rating ?? 0)
                 GameStatCard(title: "rapid", rating: chessData.profileStat?.rapid.last.rating ?? 0)
                 GameStatCard(title: "daily", rating: chessData.profileStat?.daily.last.rating ?? 0)
             }
             .padding()
-        }
-//        .background(Color.black.edgesIgnoringSafeArea(.all))
-        .onAppear {
-            statsManager.getProfileStat()
         }
     }
 }
@@ -56,7 +52,7 @@ struct GameStatCard: View {
                 .padding(.bottom)
 
         }
-        .frame(width: 120, height: 140)
+        .frame(width: 115, height: 140)
         .background(Color.gray.opacity(0.5))
         .cornerRadius(10)
     }

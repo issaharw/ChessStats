@@ -6,8 +6,103 @@
 //
 
 import Foundation
+import SwiftData
 
-struct ProfileStat: Codable {
+@Model
+class ProfileStat: Identifiable {
+    let dateFetched: Date
+    let daily: TimeClassStats
+    let rapid: TimeClassStats
+    let bullet: TimeClassStats
+    let blitz: TimeClassStats
+    
+    init(dateFetched: Date, daily: TimeClassStats, rapid: TimeClassStats, bullet: TimeClassStats, blitz: TimeClassStats) {
+        self.dateFetched = dateFetched
+        self.daily = daily
+        self.rapid = rapid
+        self.bullet = bullet
+        self.blitz = blitz
+    }
+    
+    convenience init(from: ProfileStatRecord, dateFetched: Date = Date()) {
+        self.init(dateFetched: dateFetched, daily: TimeClassStats(from: from.daily, timeClass: "daily"),
+                                            rapid: TimeClassStats(from: from.rapid, timeClass: "rapid"),
+                                            bullet: TimeClassStats(from: from.bullet, timeClass: "bullet"),
+                                            blitz: TimeClassStats(from: from.blitz, timeClass: "blitz"))
+    }
+    
+    var id: Date {
+        dateFetched
+    }
+}
+
+@Model
+class TimeClassStats: Identifiable {
+    let timeClass: String
+    let last: RatingStats
+    let best: RatingStats
+    let record: TimeClassRecord
+    
+    init(timeClass: String, last: RatingStats, best: RatingStats, record: TimeClassRecord) {
+        self.timeClass = timeClass
+        self.last = last
+        self.best = best
+        self.record = record
+    }
+    
+    convenience init(from: ChessModeStats, timeClass: String) {
+        self.init(timeClass: timeClass, last: RatingStats(from: from.last), best: RatingStats(from: from.best), record: TimeClassRecord(from: from.record))
+    }
+    
+    var id: String {
+        timeClass
+    }
+}
+
+@Model
+class RatingStats: Identifiable {
+    let rating: Int
+    let date: Int
+    
+    init(rating: Int, date: Int) {
+        self.rating = rating
+        self.date = date
+    }
+    
+    convenience init(from: ChessGameStats) {
+        self.init(rating: from.rating, date: from.date)
+    }
+    
+    var id: String {
+        "\(date) - \(rating)"
+    }
+}
+
+@Model
+class TimeClassRecord {
+    let win: Int
+    let loss: Int
+    let draw: Int
+    let timePerMove: Int?
+    let timeoutPercent: Double?
+
+    init(win: Int, loss: Int, draw: Int, timePerMove: Int?, timeoutPercent: Double?) {
+        self.win = win
+        self.loss = loss
+        self.draw = draw
+        self.timePerMove = timePerMove
+        self.timeoutPercent = timeoutPercent
+    }
+
+    convenience init(from: ChessRecord) {
+        self.init(win: from.win, loss: from.loss, draw: from.draw, timePerMove: from.timePerMove, timeoutPercent: from.timeoutPercent)
+    }
+}
+
+
+
+
+struct ProfileStatRecord: Codable {
     let daily: ChessModeStats
     let rapid: ChessModeStats
     let bullet: ChessModeStats
@@ -23,20 +118,13 @@ struct ProfileStat: Codable {
 
 struct ChessModeStats: Codable {
     let last: ChessGameStats
-    let best: ChessBestGameStats
+    let best: ChessGameStats
     let record: ChessRecord
 }
 
 struct ChessGameStats: Codable {
     let rating: Int
     let date: Int
-    let rd: Int?
-}
-
-struct ChessBestGameStats: Codable {
-    let rating: Int
-    let date: Int
-    let game: URL
 }
 
 struct ChessRecord: Codable {
@@ -162,7 +250,8 @@ func parseProfileStat(from json: [String: Any]) -> ProfileStat? {
         let data = try JSONSerialization.data(withJSONObject: json)
         let decoder = JSONDecoder()
 //        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        return try decoder.decode(ProfileStat.self, from: data)
+        let record = try decoder.decode(ProfileStatRecord.self, from: data)
+        return ProfileStat(from: record)
     } catch {
         print("Error decoding JSON: \(error)")
         return nil

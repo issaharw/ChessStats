@@ -49,13 +49,13 @@ struct GamesBarView: View {
             GeometryReader { geometry in
                 HStack(spacing: 0) {
                     Rectangle()
-                        .frame(width: geometry.size.width * CGFloat(gamesWon) / CGFloat(totalGames), height: 20)
+                        .frame(width: geometry.size.width * CGFloat(gamesWon) / CGFloat(totalGames), height: 15)
                         .foregroundColor(.green)
                     Rectangle()
-                        .frame(width: geometry.size.width * CGFloat(gamesDrawn) / CGFloat(totalGames), height: 20)
+                        .frame(width: geometry.size.width * CGFloat(gamesDrawn) / CGFloat(totalGames), height: 15)
                         .foregroundColor(.gray)
                     Rectangle()
-                        .frame(width: geometry.size.width * CGFloat(gamesLost) / CGFloat(totalGames), height: 20)
+                        .frame(width: geometry.size.width * CGFloat(gamesLost) / CGFloat(totalGames), height: 15)
                         .foregroundColor(.red)
                 }
             }

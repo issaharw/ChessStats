@@ -23,10 +23,6 @@ struct MainScreen: View {
                     }
                 }
                 .listStyle(.plain)
-//                .background(Color.systemBackground)
-                .onAppear {
-                    statsManager.getGameArchives()
-                }
             }
         }
     }

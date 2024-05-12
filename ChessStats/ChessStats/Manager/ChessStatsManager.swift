@@ -13,20 +13,27 @@ import SwiftData
 class ChessStatsManager: ObservableObject {
     
     var chessData: ChessData
-//    var persistenceManager: PersistenceManager
+    var persistenceManager: PersistenceManager
     
-    init(chessData: ChessData) {
+    init(chessData: ChessData, persistenceManager: PersistenceManager) {
         self.chessData = chessData
-//        self.persistenceManager = persistenceManager
+        self.persistenceManager = persistenceManager
     }
     
     func getProfileStat() {
         let start = now()
+        let profileStat = self.persistenceManager.fetchProfileStat()
+        if (profileStat != nil) {
+            print("Found profile stat in swfit data. Date fetched: \(profileStat!.dateFetched)")
+            chessData.profileStat = profileStat
+        }
+        
         sendRequest(urlStr: "https://api.chess.com/pub/player/issaharw/stats") { (data, error) in
             let received = now()
             if let profileStat = data {
                 DispatchQueue.main.async {
                     self.chessData.profileStat = parseProfileStat(from: profileStat)!
+                    self.persistenceManager.saveProfileStat(stat: self.chessData.profileStat!)
                 }
                 print("UI Shown: \(now() - received). Request: \(received - start)")
             }
@@ -38,11 +45,19 @@ class ChessStatsManager: ObservableObject {
     
     func getGameArchives() {
         let start = now()
+        let archivesFromData = self.persistenceManager.fetchArchives()
+        if (!archivesFromData.isEmpty && archivesFromData.first!.isCurrentMonth()) {
+            self.chessData.archives = archivesFromData
+            print("Fetched data from archives. First month is: \(archivesFromData.first!.archiveUrl)")
+            return
+        }
+        
         sendRequest(urlStr: "https://api.chess.com/pub/player/issaharw/games/archives") { (data, error) in
             let received = now()
             if let archives = data?["archives"] as? [String] {
                 DispatchQueue.main.async {
                     self.chessData.archives = archives.sorted(by: >).map { url in MonthArchive(url: url) }
+                    self.persistenceManager.saveArchives(archives: self.chessData.archives)
                 }
                 print("UI Shown: \(now() - received). Request: \(received - start)")
             }
@@ -53,23 +68,51 @@ class ChessStatsManager: ObservableObject {
     }
     
     func buildDaysStats(monthArchive: MonthArchive) {
+        if (monthArchive.isCurrentMonth()) {
+            fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
+        }
+        else { // past month
+            let gamesPerMonthFromData = persistenceManager.fetchUserGames(forMonth: monthArchive)
+            if (gamesPerMonthFromData.isEmpty) {
+                fetchUserGames(monthArchive: monthArchive, alsoSaveToData: true)
+            }
+            else {
+                print("Get Data from SwiftData, so not fetching.")
+                print("For Month: \(monthArchive.year)/\(monthArchive.month) I got from SwiftData \(gamesPerMonthFromData.count) Games")
+                buildDaysStats(monthArchive: monthArchive, games: gamesPerMonthFromData)
+            }
+        }
+    }
+    
+    private func fetchUserGames(monthArchive: MonthArchive, alsoSaveToData: Bool) {
         let start = now()
         sendRequest(urlStr: monthArchive.archiveUrl) { (data, error) in
             let received = now()
             if let gamesArray = data?["games"] as? [[String: Any]] {
+                print("For Month: \(monthArchive.year)/\(monthArchive.month) I got from Chess.com \(gamesArray.count) Games")
                 let rawGames = parseGames(from: gamesArray)
                 let userGames = rawGames.map { game in UserGame.fromChessGame(game: game) }.sorted { $0.endTime < $1.endTime }
-                let gamesByDate = self.groupGamesByDay(games: userGames)
-                DispatchQueue.main.async {
-                    self.chessData.dayStatsByMonth[monthArchive] = self.buildDayStats(gamesByDate: gamesByDate, allGames: userGames).sorted { $0.date > $1.date }
+                self.buildDaysStats(monthArchive: monthArchive, games: userGames)
+                if (alsoSaveToData) {
+                    DispatchQueue.main.async {
+                        self.persistenceManager.saveUserGames(games: userGames)
+                    }
                 }
-                print("Day UI Shown: \(now() - received). Request: \(received - start)")
+                print("Fetch User Games - Request: \(received - start). Processing: \(now() - received).")
             }
             else if let error = error {
                 print("error: \(error.localizedDescription)")
             }
         }
     }
+    
+    private func buildDaysStats(monthArchive: MonthArchive, games: [UserGame]) {
+        let gamesByDate = self.groupGamesByDay(games: games)
+        DispatchQueue.main.async {
+            self.chessData.dayStatsByMonth[monthArchive] = self.buildDayStats(gamesByDate: gamesByDate, allGames: games).sorted { $0.date > $1.date }
+        }
+    }
+    
     
     func groupGamesByDay(games: [UserGame]) -> [Date: [UserGame]] {
         var groupedGames = [Date: [UserGame]]()

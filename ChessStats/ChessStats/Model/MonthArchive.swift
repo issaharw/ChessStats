@@ -6,21 +6,37 @@
 //
 
 import Foundation
+import SwiftData
 
-struct MonthArchive: Identifiable, Hashable {
+@Model
+class MonthArchive: Identifiable, Hashable {
     let archiveUrl: String
     let year: String
-    private let monthIndex: Int
+    let monthIndex: Int
     let month: String
     
     init(url: String) {
         archiveUrl = url
-        (year, monthIndex) = getMonthAndYearOfArchive(archiveUrl: url)
-        month = getMonthName(from: monthIndex)
+        let (parsedYear, parsedMonthIndex) = getMonthAndYearOfArchive(archiveUrl: url)
+        self.year = parsedYear
+        self.monthIndex = parsedMonthIndex
+        self.month = getMonthName(from: parsedMonthIndex)
     }
 
     var id: String {
         archiveUrl
+    }
+    
+    static func == (lhs: MonthArchive, rhs: MonthArchive) -> Bool {
+        return lhs.archiveUrl == rhs.archiveUrl
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(archiveUrl)
+    }
+    
+    func isCurrentMonth() -> Bool {
+        return isInMonth(date: Date())
     }
     
     func isInMonth(date: Date) -> Bool {
