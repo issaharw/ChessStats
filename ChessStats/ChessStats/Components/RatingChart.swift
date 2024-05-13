@@ -17,11 +17,10 @@ struct RatingChart: View {
         
     
     init(userGames: [UserGame], startRating: Int) {
-        lowerY = (userGames.min { $0.rating < $1.rating }?.rating ?? 500) - 20
-        upperY = (userGames.max { $0.rating < $1.rating }?.rating ?? 2000) + 20
-        let firstTime = userGames.first?.endTime ?? 0
         self.ratingData = userGames.enumerated().map { index, game in RatingData(rating: game.rating, id: index + 1) }
         self.ratingData.insert(RatingData(rating: startRating, id: 0), at: 0)
+        lowerY = (ratingData.min { $0.rating < $1.rating }?.rating ?? 500) - 20
+        upperY = (ratingData.max { $0.rating < $1.rating }?.rating ?? 2000) + 20
     }
     
     var body: some View {

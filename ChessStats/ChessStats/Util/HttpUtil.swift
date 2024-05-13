@@ -43,29 +43,38 @@ class HttpUtil {
              .store(in: &cancellables)
     }
     
-    func sendTwoRequestsAndGetBothData(firstUrl: String, secondUrl: String, completion: @escaping ([Data]?, Error?) -> Void) {
-        let publisher1 = URLSession.shared.dataTaskPublisher(for: URL(string: firstUrl)!)
-            .map(\.data)
-            .catch { _ in Just(Data()) } // Handle errors
-        
-        let publisher2 = URLSession.shared.dataTaskPublisher(for: URL(string: secondUrl)!)
-            .map(\.data)
-            .catch { _ in Just(Data()) } // Handle errors
+    func fetchMultipleData<T: Codable>(ofType type: T.Type, from urlStrings: [String], completion: @escaping ([T]?, Error?) -> Void) {
+        let tasks = urlStrings.compactMap { urlString -> AnyPublisher<T, Error>? in
+            guard let url = URL(string: urlString) else {
+                completion(nil, URLError(.badURL))
+                return nil
+            }
 
-        publisher1.zip(publisher2)
-            .sink(receiveCompletion: { completion in
-                switch completion {
-                case .finished:
-                    print("finished requests")
-                    // Requests completed
-                    break
-                case .failure(let error):
-                    print("Error: \(error)")
-                }
-            }, receiveValue: { (data1, data2) in
-                print("Received both responses")
-                // Process data1 and data2 here
-            })
-            .store(in: &cancellables)
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.addValue("application/json", forHTTPHeaderField: "Accept")
+            request.addValue("username: issaharw, email: issahar.wss@gmail.com", forHTTPHeaderField: "User-Agent")
+
+            return URLSession.shared.dataTaskPublisher(for: request)
+                .map(\.data)
+                .decode(type: T.self, decoder: JSONDecoder())
+    //            .receive(on: RunLoop.main) // Ensure the result is delivered on the main thread
+                .eraseToAnyPublisher()
+        }
+        
+        Publishers.MergeMany(tasks)
+            .collect()
+            .sink(receiveCompletion: { taskCompletion in
+                 switch taskCompletion {
+                 case .finished:
+                     print("Successfully fetched data for multiple request")
+                 case .failure(let error):
+                     print("Failed to fetch data: \(error)")
+                     completion(nil, error)
+                 }
+             }, receiveValue: { retData in
+                completion(retData, nil)
+             })
+             .store(in: &cancellables)
     }
 }

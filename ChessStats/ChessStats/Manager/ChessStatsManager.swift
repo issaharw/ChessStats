@@ -22,13 +22,6 @@ class ChessStatsManager: ObservableObject {
         self.persistenceManager = persistenceManager
     }
     
-    func testing() {
-        httpUtil.sendTwoRequestsAndGetBothData(firstUrl: "https://api.chess.com/pub/player/issaharw/games/2024/05", secondUrl: "https://api.chess.com/pub/player/issaharw/games/2024/04") { data, error in
-            print("got data from may and april")
-        }
-    }
-    
-    
     func getProfileStat() {
         let start = now()
         let profileStat = self.persistenceManager.fetchProfileStat()
@@ -94,12 +87,20 @@ class ChessStatsManager: ObservableObject {
     
     private func fetchUserGames(monthArchive: MonthArchive, alsoSaveToData: Bool) {
         let start = now()
-        httpUtil.fetchData(ofType: Games.self, from: monthArchive.archiveUrl) { (data, error) in
+        let urls = getArchivesToFetch(for: monthArchive)
+        httpUtil.fetchMultipleData(ofType: Games.self, from: urls) { (data, error) in
+            if (error != nil) {
+                print("found an error, fetching again...")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    // run again after a second. there might be a problem in Chess.com
+                    self.fetchUserGames(monthArchive: monthArchive, alsoSaveToData: alsoSaveToData)
+                }
+            }
             let received = now()
-            if let gamesObject = data {
-                print("For Month: \(monthArchive.year)/\(monthArchive.month) I got from Chess.com \(gamesObject.games.count) Games")
+            if let gamesObjects = data {
+                print("For Months: \(urls) I got from Chess.com \(gamesObjects.count) Games")
 //                let rawGames = parseGames(from: gamesArray)
-                let userGames = gamesObject.games.map { game in UserGame.fromChessGame(game: game) }.sorted { $0.endTime < $1.endTime }
+                let userGames = gamesObjects.flatMap {$0.games}.map { game in UserGame.fromChessGame(game: game) }.sorted { $0.endTime < $1.endTime }
                 self.buildDaysStats(monthArchive: monthArchive, games: userGames)
                 if (alsoSaveToData) {
                     DispatchQueue.main.async {
@@ -114,10 +115,34 @@ class ChessStatsManager: ObservableObject {
         }
     }
     
+    private func getArchivesToFetch(for archive: MonthArchive) -> [String] {
+        // for current month, get this month and the month before (for start rating of the first day of the month
+        if (archive.isCurrentMonth()) {
+            if (chessData.archives.count > 1) {
+                return [chessData.archives[0].archiveUrl, chessData.archives[1].archiveUrl]
+            }
+            else {
+                return [archive.archiveUrl]
+            }
+        }
+        else {
+            // for past month, get the data of the month and the one before (for start rating) and the month after (for the games in the morning of the 1st)
+            let index = chessData.archives.firstIndex(of: archive)!
+            if (chessData.archives.count > 2 && index != chessData.archives.count - 1 ) {
+                return [chessData.archives[index - 1].archiveUrl, chessData.archives[index].archiveUrl, chessData.archives[index + 1].archiveUrl]
+            }
+            else {
+                return [chessData.archives[index - 1].archiveUrl, chessData.archives[index].archiveUrl]
+            }
+                
+        }
+    }
+    
     private func buildDaysStats(monthArchive: MonthArchive, games: [UserGame]) {
         let gamesByDate = self.groupGamesByDay(games: games)
+        let gamesByDateOfMonth = gamesByDate.filter { date, _ in monthArchive.isInMonth(date: date) }
         DispatchQueue.main.async {
-            self.chessData.dayStatsByMonth[monthArchive] = self.buildDayStats(gamesByDate: gamesByDate, allGames: games).sorted { $0.date > $1.date }
+            self.chessData.dayStatsByMonth[monthArchive] = self.buildDayStats(gamesByDate: gamesByDateOfMonth, allGames: games).sorted { $0.date > $1.date }
         }
     }
     
