@@ -14,14 +14,15 @@ struct MonthView: View {
 
     var body: some View {
         VStack{
-            if ((chessData.dayStatsByMonth[monthArchive] ?? []).isEmpty) {
+            let dayStatByMonth = chessData.dayStatsByMonth[monthArchive] ?? []
+            if (dayStatByMonth.isEmpty) {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle())
                     .scaleEffect(2)
             }
             else {
                 NavigationStack {
-                    List(chessData.dayStatsByMonth[monthArchive] ?? []) { dayStat in
+                    List(dayStatByMonth) { dayStat in
                         NavigationLink(destination: DayView(dayStats: dayStat)){
                             DayCardView(dayStats: dayStat)
                         }
