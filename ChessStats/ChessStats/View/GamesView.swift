@@ -12,8 +12,11 @@ struct GamesView: View {
     let games: [UserGame]
     
     var body: some View {
-        Text("\(games.count) Games")
-            .font(.headline)
+        List {
+            ForEach(games) { game in
+                GameCardView(game: game)
+            }
+        }
     }
 }
 

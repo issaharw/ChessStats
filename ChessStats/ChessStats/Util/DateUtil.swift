@@ -36,3 +36,15 @@ extension Date {
 func now() -> Int {
     return Int(Date().timeIntervalSince1970 * 1000)
 }
+
+
+extension Int {
+    func timeFormatted() -> String {
+        let date = Date(timeIntervalSince1970: TimeInterval(self))
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Asia/Jerusalem")
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+
+    }
+}

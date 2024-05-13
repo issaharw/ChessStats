@@ -13,22 +13,31 @@ struct MonthView: View {
     let monthArchive: MonthArchive
 
     var body: some View {
-        NavigationStack {
-            List(chessData.dayStatsByMonth[monthArchive] ?? []) { dayStat in
-                NavigationLink(destination: DayView(dayStats: dayStat)){
-                    DayCardView(dayStats: dayStat)
+        VStack{
+            if ((chessData.dayStatsByMonth[monthArchive] ?? []).isEmpty) {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .scaleEffect(2)
+            }
+            else {
+                NavigationStack {
+                    List(chessData.dayStatsByMonth[monthArchive] ?? []) { dayStat in
+                        NavigationLink(destination: DayView(dayStats: dayStat)){
+                            DayCardView(dayStats: dayStat)
+                        }
+                    }
+                    .navigationTitle("\(monthArchive.month), \(String(monthArchive.year))")
+                    .toolbar {
+                        Button(action: {}) {
+                            Image(systemName: "plus")
+                        }
+                        .accessibilityLabel("New")
+                    }
                 }
             }
-            .onAppear {
-                statsManager.buildDaysStats(monthArchive: monthArchive)
-            }
-            .navigationTitle("\(monthArchive.month), \(String(monthArchive.year))")
-            .toolbar {
-                Button(action: {}) {
-                    Image(systemName: "plus")
-                }
-                .accessibilityLabel("New")
-            }
+        }
+        .onAppear {
+            statsManager.buildDaysStats(monthArchive: monthArchive)
         }
     }
 }

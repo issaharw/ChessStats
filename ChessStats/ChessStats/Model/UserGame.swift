@@ -119,3 +119,4 @@ class UserGame: Identifiable, Equatable {
 }
 
 
+let sampleUserGame = UserGame.fromChessGame(game: sampleGame!)

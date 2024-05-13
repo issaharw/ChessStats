@@ -30,6 +30,7 @@
 		36A82E332BF000A4001109AB /* DayRatingCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A82E322BF000A4001109AB /* DayRatingCardView.swift */; };
 		36A82E382BF00F44001109AB /* ProfileStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A82E372BF00F44001109AB /* ProfileStat.swift */; };
 		36A82E3A2BF01F99001109AB /* ProfileStatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A82E392BF01F99001109AB /* ProfileStatView.swift */; };
+		36C8F8CF2BF1D63E0088DF6A /* GameCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36C8F8CE2BF1D63E0088DF6A /* GameCardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +58,7 @@
 		36A82E322BF000A4001109AB /* DayRatingCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRatingCardView.swift; sourceTree = "<group>"; };
 		36A82E372BF00F44001109AB /* ProfileStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStat.swift; sourceTree = "<group>"; };
 		36A82E392BF01F99001109AB /* ProfileStatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStatView.swift; sourceTree = "<group>"; };
+		36C8F8CE2BF1D63E0088DF6A /* GameCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -160,6 +162,7 @@
 				3625FDCC2BE4F213007153C9 /* DayCardView.swift */,
 				362A6E102BED6E6500EB62A0 /* RatingChart.swift */,
 				36A82E322BF000A4001109AB /* DayRatingCardView.swift */,
+				36C8F8CE2BF1D63E0088DF6A /* GameCardView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -234,6 +237,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36C8F8CF2BF1D63E0088DF6A /* GameCardView.swift in Sources */,
 				36607E6C2BEA64ED00583A95 /* ChessData.swift in Sources */,
 				3625FDCD2BE4F213007153C9 /* DayCardView.swift in Sources */,
 				3625FDCF2BE4F48B007153C9 /* DayView.swift in Sources */,
