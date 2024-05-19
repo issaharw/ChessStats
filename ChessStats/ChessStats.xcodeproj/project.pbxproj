@@ -26,6 +26,7 @@
 		362A6E0D2BECF99B00EB62A0 /* PersistenceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362A6E0C2BECF99B00EB62A0 /* PersistenceManager.swift */; };
 		362A6E112BED6E6500EB62A0 /* RatingChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362A6E102BED6E6500EB62A0 /* RatingChart.swift */; };
 		362A6E132BED79AE00EB62A0 /* GamesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362A6E122BED79AE00EB62A0 /* GamesView.swift */; };
+		363E37182BF9CB2A009F5EEB /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363E37172BF9CB2A009F5EEB /* Globals.swift */; };
 		36607E6C2BEA64ED00583A95 /* ChessData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36607E6B2BEA64ED00583A95 /* ChessData.swift */; };
 		36A82E332BF000A4001109AB /* DayRatingCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A82E322BF000A4001109AB /* DayRatingCardView.swift */; };
 		36A82E382BF00F44001109AB /* ProfileStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A82E372BF00F44001109AB /* ProfileStat.swift */; };
@@ -54,6 +55,7 @@
 		362A6E0C2BECF99B00EB62A0 /* PersistenceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceManager.swift; sourceTree = "<group>"; };
 		362A6E102BED6E6500EB62A0 /* RatingChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingChart.swift; sourceTree = "<group>"; };
 		362A6E122BED79AE00EB62A0 /* GamesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesView.swift; sourceTree = "<group>"; };
+		363E37172BF9CB2A009F5EEB /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
 		36607E6B2BEA64ED00583A95 /* ChessData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessData.swift; sourceTree = "<group>"; };
 		36A82E322BF000A4001109AB /* DayRatingCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRatingCardView.swift; sourceTree = "<group>"; };
 		36A82E372BF00F44001109AB /* ProfileStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStat.swift; sourceTree = "<group>"; };
@@ -91,14 +93,15 @@
 		3625FDA82BE4B452007153C9 /* ChessStats */ = {
 			isa = PBXGroup;
 			children = (
+				3625FDA92BE4B452007153C9 /* ChessStatsApp.swift */,
 				362A6E0B2BECF98300EB62A0 /* Manager */,
 				3625FDC72BE4D9D8007153C9 /* Model */,
 				3625FDC02BE4CE46007153C9 /* View */,
 				36A82E362BF00E44001109AB /* Components */,
 				3625FDB72BE4B57F007153C9 /* Util */,
-				3625FDA92BE4B452007153C9 /* ChessStatsApp.swift */,
 				3625FDAD2BE4B454007153C9 /* Assets.xcassets */,
 				3625FDAF2BE4B454007153C9 /* Preview Content */,
+				363E37172BF9CB2A009F5EEB /* Globals.swift */,
 			);
 			path = ChessStats;
 			sourceTree = "<group>";
@@ -254,6 +257,7 @@
 				362A6E0D2BECF99B00EB62A0 /* PersistenceManager.swift in Sources */,
 				3625FDBB2BE4B963007153C9 /* DayStats.swift in Sources */,
 				3625FDC22BE4CE67007153C9 /* MainScreen.swift in Sources */,
+				363E37182BF9CB2A009F5EEB /* Globals.swift in Sources */,
 				362A6E132BED79AE00EB62A0 /* GamesView.swift in Sources */,
 				3625FDD12BE50348007153C9 /* DateUtil.swift in Sources */,
 				3625FDB92BE4B598007153C9 /* HttpUtil.swift in Sources */,

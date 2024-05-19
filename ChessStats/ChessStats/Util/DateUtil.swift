@@ -26,11 +26,18 @@ extension Date {
     }
     
     func formattedDate() -> String {
-            let formatter = DateFormatter()
-            formatter.timeZone = TimeZone(identifier: "Asia/Jerusalem")
-            formatter.dateFormat = "EEEE, MMMM d, yyyy"
-            return formatter.string(from: self)
-        }
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Asia/Jerusalem")
+        formatter.dateFormat = "EEEE, MMMM d, yyyy"
+        return formatter.string(from: self)
+    }
+
+    func timeFormatted() -> String {
+        let formatter = DateFormatter()
+        formatter.timeZone = TimeZone(identifier: "Asia/Jerusalem")
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: self)
+    }
 }
 
 func now() -> Int {
@@ -41,10 +48,7 @@ func now() -> Int {
 extension Int {
     func timeFormatted() -> String {
         let date = Date(timeIntervalSince1970: TimeInterval(self))
-        let formatter = DateFormatter()
-        formatter.timeZone = TimeZone(identifier: "Asia/Jerusalem")
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
+        return date.timeFormatted()
 
     }
 }

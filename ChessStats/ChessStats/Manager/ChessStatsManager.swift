@@ -70,19 +70,49 @@ class ChessStatsManager: ObservableObject {
         }
     }
     
+    func prefetchCurrentMonth() {
+        if (!self.chessData.archives.isEmpty && self.chessData.archives.first!.isCurrentMonth()) {
+            print("Prefetching current month!!!")
+            buildDaysStats(monthArchive: self.chessData.archives.first!)
+        }
+        else {
+            print("Current month is not yet in the model. Not prefetching!!!")
+        }
+    }
+    
+    
     func buildDaysStats(monthArchive: MonthArchive) {
-        if (monthArchive.isCurrentMonth()) {
+        let dayStatsByMonth = self.chessData.dayStatsByMonth[monthArchive]
+        if (dayStatsByMonth != nil && !dayStatsByMonth!.isEmpty) { // if there is data in the model (already fetched)
+            if (!monthArchive.isCurrentMonth()) { // if not current month, the data won't be new, so no point in fetching again.
+                print("Fetched day stats by month for past month. No need to fetch again")
+            }
+            else { // current month, check if the app returned from background
+                if (Globals.shared.returnedFromBackground) {
+                    fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
+                    Globals.shared.returnedFromBackground = false
+                }
+                else {
+                    print("Current month, but the app was always open - no new games. No need to fetch again")
+                }
+            }
+        }
+        else {
             fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
         }
-        else { // past month
-            let dayStatsByMonth = self.chessData.dayStatsByMonth[monthArchive]
-            if (dayStatsByMonth != nil && !dayStatsByMonth!.isEmpty) {
-                print("fetched day stats by month. No need to fetch again")
-            }
-            else {
-                fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
-            }
-        }
+
+//        if (monthArchive.isCurrentMonth()) {
+//            fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
+//        }
+//        else { // past month
+//            let dayStatsByMonth = self.chessData.dayStatsByMonth[monthArchive]
+//            if (dayStatsByMonth != nil && !dayStatsByMonth!.isEmpty) {
+//                print("fetched day stats by month. No need to fetch again")
+//            }
+//            else {
+//                fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false)
+//            }
+//        }
     }
     
     private func fetchUserGames(monthArchive: MonthArchive, alsoSaveToData: Bool) {

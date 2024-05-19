@@ -25,6 +25,19 @@ struct MainScreen: View {
                 .listStyle(.plain)
             }
         }
+        .onAppear {
+            let start = now()
+            print("Main screen. now: \(String(start))")
+            self.statsManager.getProfileStat()
+            self.statsManager.getGameArchives()
+            self.statsManager.prefetchCurrentMonth()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            print("App moved to the foreground")
+            Globals.shared.returnedFromBackground = true
+            self.statsManager.getProfileStat()
+            self.statsManager.prefetchCurrentMonth()
+        }
     }
 }
 

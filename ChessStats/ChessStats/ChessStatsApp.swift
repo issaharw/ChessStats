@@ -36,10 +36,6 @@ struct ChessStatsApp: App {
         self.httpUtil = HttpUtil()
         self.persistenceManager = PersistenceManager(modelContext: modelContainer.mainContext)
         self.chessStatManager = ChessStatsManager(chessData: chessData, httpUtil: httpUtil, persistenceManager: persistenceManager)
-        
-        self.chessStatManager.getProfileStat()
-        self.chessStatManager.getGameArchives()
-
     }
         
     var body: some Scene {
