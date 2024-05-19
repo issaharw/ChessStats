@@ -30,7 +30,7 @@ struct DayView: View {
                         Spacer()
                         GamesBarView(userGames: stat.games)
                         Spacer()
-                        NavigationLink(destination: GamesView(games: stat.games)) {
+                        NavigationLink(destination: GamesView(stat: stat)) {
                             Label {
                             Text("Show Games")
                                 .font(.headline)
