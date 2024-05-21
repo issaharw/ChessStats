@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct MainScreen: View {
+    @Environment(\.scenePhase) private var scenePhase
+    
     @EnvironmentObject private var chessData: ChessData
     @EnvironmentObject private var statsManager: ChessStatsManager
     
@@ -25,18 +27,14 @@ struct MainScreen: View {
                 .listStyle(.plain)
             }
         }
-        .onAppear {
-            let start = now()
-            print("Main screen. now: \(String(start))")
-            self.statsManager.getProfileStat()
-            self.statsManager.getGameArchives()
-            self.statsManager.prefetchCurrentMonth()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
-            print("App moved to the foreground")
-            Globals.shared.returnedFromBackground = true
-            self.statsManager.getProfileStat()
-            self.statsManager.prefetchCurrentMonth()
+        .onChange(of: scenePhase) { _, newPhase in
+            if (newPhase == .active) {
+                print("Scene new phase is ACTIVE")
+                Globals.shared.returnedFromBackground = true
+                self.statsManager.getProfileStat()
+                self.statsManager.getGameArchives()
+                self.statsManager.prefetchCurrentMonth()
+            }
         }
     }
 }
