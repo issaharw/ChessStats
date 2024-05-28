@@ -25,7 +25,6 @@ class HttpUtil {
         let task = URLSession.shared.dataTaskPublisher(for: request)
             .map(\.data)
             .decode(type: T.self, decoder: JSONDecoder())
-//            .receive(on: RunLoop.main) // Ensure the result is delivered on the main thread
             .eraseToAnyPublisher()
         
         task
@@ -58,13 +57,24 @@ class HttpUtil {
             return URLSession.shared.dataTaskPublisher(for: request)
                 .map(\.data)
                 .decode(type: T.self, decoder: JSONDecoder())
-    //            .receive(on: RunLoop.main) // Ensure the result is delivered on the main thread
                 .eraseToAnyPublisher()
         }
         
-        Publishers.MergeMany(tasks)
-            .collect()
-            .sink(receiveCompletion: { taskCompletion in
+        let initialPublisher = Result<[T], Error>.Publisher([]).eraseToAnyPublisher()
+        
+        // Chain the publishers using flatMap
+        let combinedTasks = tasks.reduce(initialPublisher) { (combined, next) in
+            combined.flatMap { results in
+                next.map { result in
+                    results + [result] // Append the result to the array
+                }
+            }
+            .eraseToAnyPublisher()
+        }
+
+//        Publishers.MergeMany(tasks)
+//            .collect()
+        combinedTasks.sink(receiveCompletion: { taskCompletion in
                  switch taskCompletion {
                  case .finished:
                      print("Successfully fetched data for multiple request")
