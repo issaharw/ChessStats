@@ -23,17 +23,32 @@ class HttpUtil {
         request.addValue("username: issaharw, email: issahar.wss@gmail.com", forHTTPHeaderField: "User-Agent")
 
         let task = URLSession.shared.dataTaskPublisher(for: request)
-            .map(\.data)
-            .decode(type: T.self, decoder: JSONDecoder())
+            .tryMap { output -> Data in
+                // Check for HTTP response status code if needed
+                guard let httpResponse = output.response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    throw URLError(.badServerResponse)
+                }
+                return output.data
+            }
+            .tryMap { data -> T in
+                // Attempt to decode the data into MyObject
+                do {
+                    let object = try JSONDecoder().decode(T.self, from: data)
+                    return object
+                } catch {
+                    debugData(header: "Single request Decoding issue", data: String(data: data, encoding: .utf8)!)
+                    throw URLError(.badServerResponse)
+                }
+            }
             .eraseToAnyPublisher()
-        
+
         task
             .sink(receiveCompletion: { taskCompletion in
                  switch taskCompletion {
                  case .finished:
-                     print("Successfully fetched data for \(urlString)")
+                     debug("Successfully fetched data for \(urlString)")
                  case .failure(let error):
-                     print("Failed to fetch data: \(error)")
+                     debug("Failed to fetch data: \(error)")
                      completion(nil, error)
                  }
              }, receiveValue: { retData in
@@ -55,8 +70,23 @@ class HttpUtil {
             request.addValue("username: issaharw, email: issahar.wss@gmail.com", forHTTPHeaderField: "User-Agent")
 
             return URLSession.shared.dataTaskPublisher(for: request)
-                .map(\.data)
-                .decode(type: T.self, decoder: JSONDecoder())
+                .tryMap { output -> Data in
+                    // Check for HTTP response status code if needed
+                    guard let httpResponse = output.response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                        throw URLError(.badServerResponse)
+                    }
+                    return output.data
+                }
+                .tryMap { data -> T in
+                    // Attempt to decode the data into MyObject
+                    do {
+                        let object = try JSONDecoder().decode(T.self, from: data)
+                        return object
+                    } catch {
+                        debugData(header: "Multiple requests Decoding issue", data: String(data: data, encoding: .utf8)!)
+                        throw URLError(.badServerResponse)
+                    }
+                }
                 .eraseToAnyPublisher()
         }
         
@@ -72,14 +102,12 @@ class HttpUtil {
             .eraseToAnyPublisher()
         }
 
-//        Publishers.MergeMany(tasks)
-//            .collect()
         combinedTasks.sink(receiveCompletion: { taskCompletion in
                  switch taskCompletion {
                  case .finished:
-                     print("Successfully fetched data for multiple request")
+                     debug("Successfully fetched data for multiple request")
                  case .failure(let error):
-                     print("Failed to fetch data: \(error)")
+                     debug("Failed to fetch data: \(error)")
                      completion(nil, error)
                  }
              }, receiveValue: { retData in

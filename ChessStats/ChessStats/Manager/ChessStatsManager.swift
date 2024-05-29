@@ -26,57 +26,48 @@ class ChessStatsManager: ObservableObject {
         let start = now()
         let profileStat = self.persistenceManager.fetchProfileStat()
         if (profileStat != nil) {
-            print("Found profile stat in swfit data. Date fetched: \(profileStat!.dateFetched)")
+            debug("Found profile stat in swfit data. Date fetched: \(profileStat!.dateFetched)")
             chessData.profileStat = profileStat
         }
         
         httpUtil.fetchData(ofType: ProfileStatRecord.self, from: "https://api.chess.com/pub/player/issaharw/stats") { (data, error) in
-            let received = now()
             if let profileStat = data {
                 DispatchQueue.main.async {
                     self.chessData.profileStat = ProfileStat(from: profileStat)
                     self.persistenceManager.saveProfileStat(stat: self.chessData.profileStat!)
                 }
-                print("UI Shown: \(now() - received). Request: \(received - start)")
             }
             else if let error = error {
-                print("error: \(error.localizedDescription)")
+                debug("Error getting Profile Stat: \(error.localizedDescription)")
             }
         }
     }
     
     func getGameArchives() {
-        let start = now()
         let archivesFromData = self.persistenceManager.fetchArchives()
         if (!archivesFromData.isEmpty && archivesFromData.first!.isCurrentMonth()) {
             self.chessData.archives = archivesFromData
-            print("Fetched data from archives. First month is: \(archivesFromData.first!.archiveUrl)")
             return
         }
         
         httpUtil.fetchData(ofType: MonthArchives.self, from: "https://api.chess.com/pub/player/issaharw/games/archives") { (data, error) in
-            let received = now()
             if let archivesFromChessCom = data {
                 DispatchQueue.main.async {
                     self.chessData.archives = archivesFromChessCom.archives.sorted(by: >).map { url in MonthArchive(url: url) }
                     self.persistenceManager.saveArchives(archives: self.chessData.archives)
                     
                 }
-                print("UI Shown: \(now() - received). Request: \(received - start)")
             }
             else if let error = error {
-                print("error: \(error.localizedDescription)")
+                debug("Error getting archives from Chess.com: \(error.localizedDescription)")
             }
         }
     }
     
     func prefetchCurrentMonth() {
         if (!self.chessData.archives.isEmpty && self.chessData.archives.first!.isCurrentMonth()) {
-            print("Prefetching current month!!!")
+            debug("Prefetching current month...")
             buildDaysStats(monthArchive: self.chessData.archives.first!)
-        }
-        else {
-            print("Current month is not yet in the model. Not prefetching!!!")
         }
     }
     
@@ -85,7 +76,7 @@ class ChessStatsManager: ObservableObject {
         let dayStatsByMonth = self.chessData.dayStatsByMonth[monthArchive]
         if (dayStatsByMonth != nil && !dayStatsByMonth!.isEmpty) { // if there is data in the model (already fetched)
             if (!monthArchive.isCurrentMonth()) { // if not current month, the data won't be new, so no point in fetching again.
-                print("Fetched day stats by month for past month. No need to fetch again")
+                debug("Fetched day stats by month for past month. No need to fetch again")
             }
             else { // current month, check if the app returned from background
                 if (Globals.shared.returnedFromBackground) {
@@ -93,7 +84,7 @@ class ChessStatsManager: ObservableObject {
                     Globals.shared.returnedFromBackground = false
                 }
                 else {
-                    print("Current month, but the app was always open - no new games. No need to fetch again")
+                    debug("Current month, but the app was always open - no new games. No need to fetch again")
                 }
             }
         }
@@ -120,7 +111,7 @@ class ChessStatsManager: ObservableObject {
         let urls = getArchivesToFetch(for: monthArchive)
         httpUtil.fetchMultipleData(ofType: Games.self, from: urls) { (data, error) in
             if (error != nil) {
-                print("found an error, fetching again...")
+                debug("found an error, fetching again...")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     // run again after a second. there might be a problem in Chess.com
                     self.fetchUserGames(monthArchive: monthArchive, alsoSaveToData: alsoSaveToData)
@@ -128,7 +119,7 @@ class ChessStatsManager: ObservableObject {
             }
             let received = now()
             if let gamesObjects = data {
-                print("For Months: \(urls) I got from Chess.com \(gamesObjects.count) Games")
+                debug("For Months: \(urls) I got from Chess.com \(gamesObjects.count) jsons")
 //                let rawGames = parseGames(from: gamesArray)
                 let userGames = gamesObjects.flatMap {$0.games}.map { game in UserGame.fromChessGame(game: game) }.sorted { $0.endTime < $1.endTime }
                 self.buildDaysStats(monthArchive: monthArchive, games: userGames)
@@ -137,10 +128,10 @@ class ChessStatsManager: ObservableObject {
                         self.persistenceManager.saveUserGames(games: userGames)
                     }
                 }
-                print("Fetch User Games - Request: \(received - start). Processing: \(now() - received).")
+                debug("Fetch User Games - Request: \(received - start). Processing: \(now() - received).")
             }
             else if let error = error {
-                print("error: \(error.localizedDescription)")
+                debug("Error fetching multiple sites: \(error.localizedDescription)")
             }
         }
     }

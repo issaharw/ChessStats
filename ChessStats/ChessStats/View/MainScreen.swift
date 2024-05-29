@@ -13,6 +13,9 @@ struct MainScreen: View {
     @EnvironmentObject private var chessData: ChessData
     @EnvironmentObject private var statsManager: ChessStatsManager
     
+    @State private var isPresentingLogView = false
+    
+    
     var body: some View {
         NavigationStack {
             Section(header: Label("Profile Stats", systemImage: "person")) {
@@ -25,17 +28,37 @@ struct MainScreen: View {
                     }
                 }
                 .listStyle(.plain)
+                .toolbar {
+                    Button("Logs", systemImage: "gearshape") {
+                        isPresentingLogView = true
+                    }
+                }
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
             if (newPhase == .active) {
-                print("Scene new phase is ACTIVE")
+                debug("Scene new phase is ACTIVE")
+                
                 Globals.shared.returnedFromBackground = true
                 self.statsManager.getProfileStat()
                 self.statsManager.getGameArchives()
                 self.statsManager.prefetchCurrentMonth()
             }
         }
+        .sheet(isPresented: $isPresentingLogView) {
+            NavigationStack {
+                LoggerView()
+                    .navigationTitle("Logs")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") {
+                                isPresentingLogView = false
+                            }
+                        }
+                    }
+            }
+        }
+
     }
 }
 
