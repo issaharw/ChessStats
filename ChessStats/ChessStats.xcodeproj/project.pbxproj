@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		36038A372C05FDE90087C3AC /* FileLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36038A362C05FDE90087C3AC /* FileLogger.swift */; };
 		36038A392C05FF5E0087C3AC /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36038A382C05FF5E0087C3AC /* LoggerView.swift */; };
+		36038A3C2C0C52F30087C3AC /* MonthsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36038A3B2C0C52F30087C3AC /* MonthsView.swift */; };
 		3625FDAA2BE4B452007153C9 /* ChessStatsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDA92BE4B452007153C9 /* ChessStatsApp.swift */; };
 		3625FDAE2BE4B454007153C9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3625FDAD2BE4B454007153C9 /* Assets.xcassets */; };
 		3625FDB12BE4B454007153C9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3625FDB02BE4B454007153C9 /* Preview Assets.xcassets */; };
@@ -40,6 +41,7 @@
 		36038A362C05FDE90087C3AC /* FileLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileLogger.swift; sourceTree = "<group>"; };
 		36038A382C05FF5E0087C3AC /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
 		36038A3A2C07005F0087C3AC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		36038A3B2C0C52F30087C3AC /* MonthsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthsView.swift; sourceTree = "<group>"; };
 		3625FDA62BE4B452007153C9 /* ChessStats.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChessStats.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3625FDA92BE4B452007153C9 /* ChessStatsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessStatsApp.swift; sourceTree = "<group>"; };
 		3625FDAD2BE4B454007153C9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -138,6 +140,7 @@
 				3625FDCE2BE4F48B007153C9 /* DayView.swift */,
 				362A6E122BED79AE00EB62A0 /* GamesView.swift */,
 				36A82E392BF01F99001109AB /* ProfileStatView.swift */,
+				36038A3B2C0C52F30087C3AC /* MonthsView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -253,6 +256,7 @@
 				3625FDCD2BE4F213007153C9 /* DayCardView.swift in Sources */,
 				36038A372C05FDE90087C3AC /* FileLogger.swift in Sources */,
 				3625FDCF2BE4F48B007153C9 /* DayView.swift in Sources */,
+				36038A3C2C0C52F30087C3AC /* MonthsView.swift in Sources */,
 				3625FDCB2BE4EC5A007153C9 /* Game.swift in Sources */,
 				3625FDC92BE4D9F0007153C9 /* MonthArchive.swift in Sources */,
 				362A6E0A2BECE0C400EB62A0 /* GamesBarView.swift in Sources */,

@@ -17,20 +17,44 @@ struct MainScreen: View {
     
     
     var body: some View {
-        NavigationStack {
-            Section(header: Label("Profile Stats", systemImage: "person")) {
+        NavigationStack{
+            VStack {
                 ProfileStatView()
-            }
-            Section(header: Label("Daily Stats", systemImage: "calendar")) {
-                List(chessData.archives) { archive in
-                    NavigationLink(destination: MonthView(monthArchive: archive)){
-                        MonthCardView(monthArchive: archive)
+                Spacer()
+                let archives = chessData.archives
+                if (archives.isEmpty) {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .scaleEffect(2)
+                    Spacer()
+                }
+                else {
+                    let monthArchive = archives.first!
+                    let dayStatByMonth = chessData.dayStatsByMonth[monthArchive] ?? []
+                    if (dayStatByMonth.isEmpty) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                            .scaleEffect(2)
+                        Spacer()
+                    }
+                    else {
+                        List(dayStatByMonth) { dayStat in
+                            NavigationLink(destination: DayView(dayStats: dayStat)){
+                                DayCardView(dayStats: dayStat)
+                            }
+                        }
                     }
                 }
-                .listStyle(.plain)
-                .toolbar {
+            }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Logs", systemImage: "gearshape") {
                         isPresentingLogView = true
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    NavigationLink(destination: MonthsView()){
+                        Image(systemName: "calendar")
                     }
                 }
             }
@@ -40,9 +64,13 @@ struct MainScreen: View {
                 debug("Scene new phase is ACTIVE")
                 
                 Globals.shared.returnedFromBackground = true
-                self.statsManager.getProfileStat()
-                self.statsManager.getGameArchives()
-                self.statsManager.prefetchCurrentMonth()
+                self.statsManager.getGameArchives() { error in
+                    debug("Finished fetching game archives")
+                    self.statsManager.getProfileStat() { error in
+                        debug("Finished fetching profile stat")
+                        self.statsManager.prefetchCurrentMonth()
+                    }
+                }
             }
         }
         .sheet(isPresented: $isPresentingLogView) {

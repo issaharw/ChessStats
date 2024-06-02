@@ -63,6 +63,7 @@ class FileLogger {
 
 func debug(_ message: String) {
     FileLogger.shared.log(message)
+    print(message)
 }
 
 func debugData(header: String, data: String) {
