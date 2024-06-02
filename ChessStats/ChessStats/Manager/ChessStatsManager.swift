@@ -137,8 +137,8 @@ class ChessStatsManager: ObservableObject {
     }
     
     private func getArchivesToFetch(for archive: MonthArchive) -> [String] {
-        // for current month, get this month and the month before (for start rating of the first day of the month
-        if (archive.isCurrentMonth()) {
+        let index = chessData.archives.firstIndex(of: archive)!
+        if (index == 0) {
             if (chessData.archives.count > 1) {
                 return [chessData.archives[0].archiveUrl, chessData.archives[1].archiveUrl]
             }
@@ -147,17 +147,15 @@ class ChessStatsManager: ObservableObject {
             }
         }
         else {
-            // for past month, get the data of the month and the one before (for start rating) and the month after (for the games in the morning of the 1st)
-            let index = chessData.archives.firstIndex(of: archive)!
             if (chessData.archives.count > 2 && index != chessData.archives.count - 1 ) {
                 return [chessData.archives[index - 1].archiveUrl, chessData.archives[index].archiveUrl, chessData.archives[index + 1].archiveUrl]
             }
             else {
                 return [chessData.archives[index - 1].archiveUrl, chessData.archives[index].archiveUrl]
             }
-                
         }
     }
+    
     
     private func buildDaysStats(monthArchive: MonthArchive, games: [UserGame]) {
         let gamesByDate = self.groupGamesByDay(games: games)

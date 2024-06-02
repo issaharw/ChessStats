@@ -25,7 +25,11 @@ class HttpUtil {
         let task = URLSession.shared.dataTaskPublisher(for: request)
             .tryMap { output -> Data in
                 // Check for HTTP response status code if needed
-                guard let httpResponse = output.response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                guard let httpResponse = output.response as? HTTPURLResponse else {
+                    throw URLError(.badServerResponse)
+                }
+                if (httpResponse.statusCode != 200) {
+                    debug("Response error for \(urlString). Status: \(httpResponse.statusCode). Body: \(output.data)")
                     throw URLError(.badServerResponse)
                 }
                 return output.data
@@ -36,7 +40,7 @@ class HttpUtil {
                     let object = try JSONDecoder().decode(T.self, from: data)
                     return object
                 } catch {
-                    debugData(header: "Single request Decoding issue", data: String(data: data, encoding: .utf8)!)
+                    debugData(header: "Decoding issue for \(urlString)", data: String(data: data, encoding: .utf8)!)
                     throw URLError(.badServerResponse)
                 }
             }
@@ -48,7 +52,7 @@ class HttpUtil {
                  case .finished:
                      debug("Successfully fetched data for \(urlString)")
                  case .failure(let error):
-                     debug("Failed to fetch data: \(error)")
+                     debug("Failed to fetch data for \(urlString): \(error)")
                      completion(nil, error)
                  }
              }, receiveValue: { retData in
@@ -72,7 +76,11 @@ class HttpUtil {
             return URLSession.shared.dataTaskPublisher(for: request)
                 .tryMap { output -> Data in
                     // Check for HTTP response status code if needed
-                    guard let httpResponse = output.response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                    guard let httpResponse = output.response as? HTTPURLResponse else {
+                        throw URLError(.badServerResponse)
+                    }
+                    if (httpResponse.statusCode != 200) {
+                        debug("Response error for \(urlString). Status: \(httpResponse.statusCode). Body: \(output.data)")
                         throw URLError(.badServerResponse)
                     }
                     return output.data
@@ -83,7 +91,7 @@ class HttpUtil {
                         let object = try JSONDecoder().decode(T.self, from: data)
                         return object
                     } catch {
-                        debugData(header: "Multiple requests Decoding issue", data: String(data: data, encoding: .utf8)!)
+                        debugData(header: "Decoding issue for \(urlString)", data: String(data: data, encoding: .utf8)!)
                         throw URLError(.badServerResponse)
                     }
                 }

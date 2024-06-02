@@ -4,6 +4,8 @@ class FileLogger {
     static let shared = FileLogger()
     private let logFileURL: URL
     private let dataFileURL: URL
+    private let logQueue = DispatchQueue(label: "com.issahar.chessstats.logger", qos: .background)
+    
     
     private init() {
         let fileManager = FileManager.default
@@ -13,35 +15,39 @@ class FileLogger {
     }
     
     func log(_ message: String) {
-        let timestamp = Date().dateFormatForLog()
-        let logMessage = "- \(timestamp): \(message)\n"
-        
-        if let data = logMessage.data(using: .utf8) {
-            if FileManager.default.fileExists(atPath: logFileURL.path) {
-                if let fileHandle = try? FileHandle(forWritingTo: logFileURL) {
-                    fileHandle.seekToEndOfFile()
-                    fileHandle.write(data)
-                    fileHandle.closeFile()
+        logQueue.async {
+            let timestamp = Date().dateFormatForLog()
+            let logMessage = "- \(timestamp): \(message)\n"
+            
+            if let data = logMessage.data(using: .utf8) {
+                if FileManager.default.fileExists(atPath: self.logFileURL.path) {
+                    if let fileHandle = try? FileHandle(forWritingTo: self.logFileURL) {
+                        fileHandle.seekToEndOfFile()
+                        fileHandle.write(data)
+                        fileHandle.closeFile()
+                    }
+                } else {
+                    try? data.write(to: self.logFileURL, options: .atomic)
                 }
-            } else {
-                try? data.write(to: logFileURL, options: .atomic)
             }
         }
     }
     
     func logData(header: String, data: String) {
-        let timestamp = Date().dateFormatForLog()
-        let logMessage = "--------------------------------- \n\(timestamp): \(header)\n\(data)\n"
-        
-        if let data = logMessage.data(using: .utf8) {
-            if FileManager.default.fileExists(atPath: dataFileURL.path) {
-                if let fileHandle = try? FileHandle(forWritingTo: dataFileURL) {
-                    fileHandle.seekToEndOfFile()
-                    fileHandle.write(data)
-                    fileHandle.closeFile()
+        logQueue.async {
+            let timestamp = Date().dateFormatForLog()
+            let logMessage = "--------------------------------- \n\(timestamp): \(header)\n\(data)\n"
+            
+            if let data = logMessage.data(using: .utf8) {
+                if FileManager.default.fileExists(atPath: self.dataFileURL.path) {
+                    if let fileHandle = try? FileHandle(forWritingTo: self.dataFileURL) {
+                        fileHandle.seekToEndOfFile()
+                        fileHandle.write(data)
+                        fileHandle.closeFile()
+                    }
+                } else {
+                    try? data.write(to: self.dataFileURL, options: .atomic)
                 }
-            } else {
-                try? data.write(to: dataFileURL, options: .atomic)
             }
         }
     }
