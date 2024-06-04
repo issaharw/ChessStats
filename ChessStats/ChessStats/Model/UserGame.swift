@@ -25,12 +25,13 @@ class UserGame: Identifiable, Equatable {
     let opponentUsername: String
     let score: Double
     let wonBy: String
+    let accuracy: Double?
     
     // for SwiftData predicate
     let year: String
     let month: Int
     
-    init(url: String, uuid: String, endTime: Int, datePlayed: Date, pgn: String, timeControl: String, timeClass: String, color: String, result: String, rating: Int, opponentUsername: String, wonBy: String, year: String, month: Int) {
+    init(url: String, uuid: String, endTime: Int, datePlayed: Date, pgn: String, timeControl: String, timeClass: String, color: String, result: String, rating: Int, opponentUsername: String, wonBy: String, accuracy: Double?, year: String, month: Int) {
         self.url = url
         self.uuid = uuid
         self.endTime = endTime
@@ -43,6 +44,7 @@ class UserGame: Identifiable, Equatable {
         self.rating = rating
         self.opponentUsername = opponentUsername
         self.wonBy = wonBy
+        self.accuracy = accuracy
         if (result == "win") {
             score = 1
         }
@@ -93,6 +95,7 @@ class UserGame: Identifiable, Equatable {
                 rating: game.white.rating,
                 opponentUsername: game.black.username,
                 wonBy: game.black.result,
+                accuracy: game.accuracies?.white,
                 year: year,
                 month: month
             )
@@ -111,6 +114,7 @@ class UserGame: Identifiable, Equatable {
                 rating: game.black.rating,
                 opponentUsername: game.white.username,
                 wonBy: game.white.result,
+                accuracy: game.accuracies?.black,
                 year: year,
                 month: month
             )

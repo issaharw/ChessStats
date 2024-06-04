@@ -18,6 +18,7 @@ struct Game: Codable, Identifiable{
     let timeControl: String
     let endTime: Int
     let rated: Bool
+    let accuracies: Accuracies?
     let tcn: String
     let uuid: String
     let initialSetup: String
@@ -28,7 +29,7 @@ struct Game: Codable, Identifiable{
     let black: Player
 
     enum CodingKeys: String, CodingKey {
-        case url, pgn, rated, tcn, uuid, fen, rules, white, black
+        case url, pgn, rated, tcn, uuid, fen, rules, white, black, accuracies
         case timeControl = "time_control"
         case endTime = "end_time"
         case initialSetup = "initial_setup"
@@ -52,6 +53,11 @@ struct Player: Codable {
         case rating, result, username, uuid
         case id = "@id"
     }
+}
+
+struct Accuracies: Codable {
+    let white: Double
+    let black: Double
 }
 
 private let sampleJson = """
