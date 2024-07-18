@@ -51,4 +51,4 @@ struct DayGameTypeStats: Identifiable {
 
 let sampleDayStats = DayStats(date: Date(), numberOfGames: 145, gameTypeStats: [])
 
-private let sorting = ["bullet": 0, "blitz": 1, "rapid": 2, "daily": 3]
+private let sorting = ["bullet": 0, "blitz": 1, "rapid": 2, "libullet": 3, "liblitz": 4, "lirapid": 5, "daily": 6]

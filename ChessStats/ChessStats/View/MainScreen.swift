@@ -12,8 +12,8 @@ struct MainScreen: View {
     
     @EnvironmentObject private var chessData: ChessData
     @EnvironmentObject private var statsManager: ChessStatsManager
-    
     @State private var isPresentingLogView = false
+    @State private var chessPlatform = getSelectedPlatform()
     
     
     var body: some View {
@@ -57,12 +57,39 @@ struct MainScreen: View {
                         Image(systemName: "calendar")
                     }
                 }
+                ToolbarItem(placement: .automatic) {
+                    Menu {
+                        Button(action: {
+                            chessPlatform = "Chess.com"
+                            saveSelectedPlatform(platform: chessPlatform)
+                        }) {
+                            Text("Chess.com")
+                        }
+                        Button(action: {
+                            chessPlatform = "Lichess"
+                            saveSelectedPlatform(platform: chessPlatform)
+                        }) {
+                            Text("Lichess")
+                        }
+                        Button(action: {
+                            chessPlatform = "Both"
+                            saveSelectedPlatform(platform: chessPlatform)
+                        }) {
+                            Text("Both")
+                        }
+                    } label: {
+                        HStack {
+                            Text("Platform: \(chessPlatform)")
+                            Image(systemName: "ellipsis.circle")
+                        }
+                    }
+                }
+
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
             if (newPhase == .active) {
                 debug("Scene new phase is ACTIVE")
-                
                 Globals.shared.returnedFromBackground = true
                 self.statsManager.getGameArchives() { error in
                     debug("Finished fetching game archives")
@@ -86,7 +113,6 @@ struct MainScreen: View {
                     }
             }
         }
-
     }
 }
 

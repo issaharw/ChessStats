@@ -48,6 +48,26 @@ class MonthArchive: Identifiable, Hashable {
         let month = calendar.component(.month, from: date)
         return year == self.year && month == self.monthIndex
     }
+    
+    func getStartAndEndOfMonthInMS() -> (startOfMonth: Int64, endOfMonth: Int64) {
+        var calendar = Calendar.current
+        calendar.timeZone = TimeZone(identifier: "Asia/Jerusalem")!
+        
+        var components = DateComponents()
+        components.year = Int(year)
+        components.month = monthIndex
+        components.day = 1
+        
+        guard let startOfMonth = calendar.date(from: components),
+              let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth) else {
+            return (startOfMonth: 0, endOfMonth: 0)
+        }
+        
+        let startOfMonthMillis = Int64(startOfMonth.timeIntervalSince1970 * 1000)
+        let endOfMonthMillis = Int64(calendar.startOfDay(for: endOfMonth).timeIntervalSince1970 * 1000 + 86400000 - 1) // end of the day in milliseconds
+        
+        return (startOfMonthMillis, endOfMonthMillis)
+    }
 }
 
 class MonthArchives: Codable {

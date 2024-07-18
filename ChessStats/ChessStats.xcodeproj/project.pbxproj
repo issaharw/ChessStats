@@ -10,6 +10,7 @@
 		36038A372C05FDE90087C3AC /* FileLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36038A362C05FDE90087C3AC /* FileLogger.swift */; };
 		36038A392C05FF5E0087C3AC /* LoggerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36038A382C05FF5E0087C3AC /* LoggerView.swift */; };
 		36038A3C2C0C52F30087C3AC /* MonthsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36038A3B2C0C52F30087C3AC /* MonthsView.swift */; };
+		360A895F2C48ED5300B821CF /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 360A895E2C48ED5300B821CF /* AppConfig.swift */; };
 		3625FDAA2BE4B452007153C9 /* ChessStatsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDA92BE4B452007153C9 /* ChessStatsApp.swift */; };
 		3625FDAE2BE4B454007153C9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3625FDAD2BE4B454007153C9 /* Assets.xcassets */; };
 		3625FDB12BE4B454007153C9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3625FDB02BE4B454007153C9 /* Preview Assets.xcassets */; };
@@ -20,7 +21,7 @@
 		3625FDC42BE4CF9B007153C9 /* MonthCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDC32BE4CF9B007153C9 /* MonthCardView.swift */; };
 		3625FDC62BE4D952007153C9 /* MonthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDC52BE4D952007153C9 /* MonthView.swift */; };
 		3625FDC92BE4D9F0007153C9 /* MonthArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDC82BE4D9F0007153C9 /* MonthArchive.swift */; };
-		3625FDCB2BE4EC5A007153C9 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDCA2BE4EC5A007153C9 /* Game.swift */; };
+		3625FDCB2BE4EC5A007153C9 /* ChessComGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDCA2BE4EC5A007153C9 /* ChessComGame.swift */; };
 		3625FDCD2BE4F213007153C9 /* DayCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDCC2BE4F213007153C9 /* DayCardView.swift */; };
 		3625FDCF2BE4F48B007153C9 /* DayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDCE2BE4F48B007153C9 /* DayView.swift */; };
 		3625FDD12BE50348007153C9 /* DateUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625FDD02BE50348007153C9 /* DateUtil.swift */; };
@@ -30,6 +31,8 @@
 		362A6E112BED6E6500EB62A0 /* RatingChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362A6E102BED6E6500EB62A0 /* RatingChart.swift */; };
 		362A6E132BED79AE00EB62A0 /* GamesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 362A6E122BED79AE00EB62A0 /* GamesView.swift */; };
 		363E37182BF9CB2A009F5EEB /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 363E37172BF9CB2A009F5EEB /* Globals.swift */; };
+		3645DE2E2C1AE22F00E51FAA /* Tokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3645DE2D2C1AE22F00E51FAA /* Tokens.swift */; };
+		3645DE302C1AE76B00E51FAA /* LichesGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3645DE2F2C1AE76B00E51FAA /* LichesGame.swift */; };
 		36607E6C2BEA64ED00583A95 /* ChessData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36607E6B2BEA64ED00583A95 /* ChessData.swift */; };
 		36A82E332BF000A4001109AB /* DayRatingCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A82E322BF000A4001109AB /* DayRatingCardView.swift */; };
 		36A82E382BF00F44001109AB /* ProfileStat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36A82E372BF00F44001109AB /* ProfileStat.swift */; };
@@ -42,6 +45,7 @@
 		36038A382C05FF5E0087C3AC /* LoggerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerView.swift; sourceTree = "<group>"; };
 		36038A3A2C07005F0087C3AC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		36038A3B2C0C52F30087C3AC /* MonthsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthsView.swift; sourceTree = "<group>"; };
+		360A895E2C48ED5300B821CF /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 		3625FDA62BE4B452007153C9 /* ChessStats.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChessStats.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3625FDA92BE4B452007153C9 /* ChessStatsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessStatsApp.swift; sourceTree = "<group>"; };
 		3625FDAD2BE4B454007153C9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -53,7 +57,7 @@
 		3625FDC32BE4CF9B007153C9 /* MonthCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthCardView.swift; sourceTree = "<group>"; };
 		3625FDC52BE4D952007153C9 /* MonthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthView.swift; sourceTree = "<group>"; };
 		3625FDC82BE4D9F0007153C9 /* MonthArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthArchive.swift; sourceTree = "<group>"; };
-		3625FDCA2BE4EC5A007153C9 /* Game.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Game.swift; sourceTree = "<group>"; };
+		3625FDCA2BE4EC5A007153C9 /* ChessComGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessComGame.swift; sourceTree = "<group>"; };
 		3625FDCC2BE4F213007153C9 /* DayCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayCardView.swift; sourceTree = "<group>"; };
 		3625FDCE2BE4F48B007153C9 /* DayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayView.swift; sourceTree = "<group>"; };
 		3625FDD02BE50348007153C9 /* DateUtil.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtil.swift; sourceTree = "<group>"; };
@@ -63,6 +67,8 @@
 		362A6E102BED6E6500EB62A0 /* RatingChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingChart.swift; sourceTree = "<group>"; };
 		362A6E122BED79AE00EB62A0 /* GamesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesView.swift; sourceTree = "<group>"; };
 		363E37172BF9CB2A009F5EEB /* Globals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Globals.swift; sourceTree = "<group>"; };
+		3645DE2D2C1AE22F00E51FAA /* Tokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokens.swift; sourceTree = "<group>"; };
+		3645DE2F2C1AE76B00E51FAA /* LichesGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LichesGame.swift; sourceTree = "<group>"; };
 		36607E6B2BEA64ED00583A95 /* ChessData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessData.swift; sourceTree = "<group>"; };
 		36A82E322BF000A4001109AB /* DayRatingCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayRatingCardView.swift; sourceTree = "<group>"; };
 		36A82E372BF00F44001109AB /* ProfileStat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStat.swift; sourceTree = "<group>"; };
@@ -102,6 +108,8 @@
 			children = (
 				36038A3A2C07005F0087C3AC /* Info.plist */,
 				3625FDA92BE4B452007153C9 /* ChessStatsApp.swift */,
+				363E37172BF9CB2A009F5EEB /* Globals.swift */,
+				3645DE2D2C1AE22F00E51FAA /* Tokens.swift */,
 				362A6E0B2BECF98300EB62A0 /* Manager */,
 				3625FDC72BE4D9D8007153C9 /* Model */,
 				3625FDC02BE4CE46007153C9 /* View */,
@@ -109,7 +117,6 @@
 				3625FDB72BE4B57F007153C9 /* Util */,
 				3625FDAD2BE4B454007153C9 /* Assets.xcassets */,
 				3625FDAF2BE4B454007153C9 /* Preview Content */,
-				363E37172BF9CB2A009F5EEB /* Globals.swift */,
 			);
 			path = ChessStats;
 			sourceTree = "<group>";
@@ -128,6 +135,7 @@
 				3625FDB82BE4B598007153C9 /* HttpUtil.swift */,
 				3625FDD02BE50348007153C9 /* DateUtil.swift */,
 				36038A362C05FDE90087C3AC /* FileLogger.swift */,
+				360A895E2C48ED5300B821CF /* AppConfig.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -150,10 +158,11 @@
 			children = (
 				3625FDBA2BE4B963007153C9 /* DayStats.swift */,
 				3625FDC82BE4D9F0007153C9 /* MonthArchive.swift */,
-				3625FDCA2BE4EC5A007153C9 /* Game.swift */,
+				3625FDCA2BE4EC5A007153C9 /* ChessComGame.swift */,
 				3625FDD22BE5056A007153C9 /* UserGame.swift */,
 				36607E6B2BEA64ED00583A95 /* ChessData.swift */,
 				36A82E372BF00F44001109AB /* ProfileStat.swift */,
+				3645DE2F2C1AE76B00E51FAA /* LichesGame.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -257,7 +266,8 @@
 				36038A372C05FDE90087C3AC /* FileLogger.swift in Sources */,
 				3625FDCF2BE4F48B007153C9 /* DayView.swift in Sources */,
 				36038A3C2C0C52F30087C3AC /* MonthsView.swift in Sources */,
-				3625FDCB2BE4EC5A007153C9 /* Game.swift in Sources */,
+				3625FDCB2BE4EC5A007153C9 /* ChessComGame.swift in Sources */,
+				360A895F2C48ED5300B821CF /* AppConfig.swift in Sources */,
 				3625FDC92BE4D9F0007153C9 /* MonthArchive.swift in Sources */,
 				362A6E0A2BECE0C400EB62A0 /* GamesBarView.swift in Sources */,
 				3625FDAA2BE4B452007153C9 /* ChessStatsApp.swift in Sources */,
@@ -268,9 +278,11 @@
 				362A6E112BED6E6500EB62A0 /* RatingChart.swift in Sources */,
 				3625FDD32BE5056A007153C9 /* UserGame.swift in Sources */,
 				36A82E3A2BF01F99001109AB /* ProfileStatView.swift in Sources */,
+				3645DE2E2C1AE22F00E51FAA /* Tokens.swift in Sources */,
 				362A6E0D2BECF99B00EB62A0 /* PersistenceManager.swift in Sources */,
 				3625FDBB2BE4B963007153C9 /* DayStats.swift in Sources */,
 				3625FDC22BE4CE67007153C9 /* MainScreen.swift in Sources */,
+				3645DE302C1AE76B00E51FAA /* LichesGame.swift in Sources */,
 				363E37182BF9CB2A009F5EEB /* Globals.swift in Sources */,
 				362A6E132BED79AE00EB62A0 /* GamesView.swift in Sources */,
 				3625FDD12BE50348007153C9 /* DateUtil.swift in Sources */,

@@ -11,44 +11,56 @@ import Combine
 class HttpUtil {
     var cancellables = Set<AnyCancellable>()
     
-    func fetchDataLichess(from urlString: String) {
+    func fetchLichessData<T: Codable>(ofType type: T.Type, from urlString: String, completion: @escaping ([T]?, Error?) -> Void) {
         guard let url = URL(string: urlString) else {
+            completion(nil, URLError(.badURL))
             return
         }
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.addValue("*/*", forHTTPHeaderField: "Accept")
-        request.addValue("Bearer lip_y4ND925E8bPQyI3uOzVu", forHTTPHeaderField: "Authorization")
+        request.addValue("application/x-ndjson", forHTTPHeaderField: "Accept")
+        request.addValue("username: issaharw, email: issahar.wss@gmail.com", forHTTPHeaderField: "User-Agent")
+        request.addValue("Bearer \(lichessToken)", forHTTPHeaderField: "Authorization")
 
         let task = URLSession.shared.dataTaskPublisher(for: request)
-            .tryMap { output -> Data in
-                // Check for HTTP response status code if needed
-                guard let httpResponse = output.response as? HTTPURLResponse else {
+            .tryMap { data, response -> String in
+                guard let httpResponse = response as? HTTPURLResponse,
+                      httpResponse.statusCode == 200 else {
                     throw URLError(.badServerResponse)
                 }
-                if (httpResponse.statusCode != 200) {
-                    debug("Response error for \(urlString). Status: \(httpResponse.statusCode). Body: \(output.data)")
-                    throw URLError(.badServerResponse)
-                }
-                return output.data
+                return String(decoding: data, as: UTF8.self)
             }
+            .flatMap { ndjsonString in
+                return ndjsonString
+                    .split(separator: "\n")
+                    .publisher
+                    .map { String($0) }
+            }
+            .tryCompactMap { line -> T? in
+                guard let data = line.data(using: String.Encoding.utf8) else {
+                    throw URLError(.cannotParseResponse)
+                }
+                return try JSONDecoder().decode(T.self, from: data)
+            }
+            .collect()
             .eraseToAnyPublisher()
-
+        
         task
             .sink(receiveCompletion: { taskCompletion in
-                 switch taskCompletion {
-                 case .finished:
-                     debug("Successfully fetched data for \(urlString)")
-                 case .failure(let error):
-                     debug("Failed to fetch data for \(urlString): \(error)")
-                 }
-             }, receiveValue: { retData in
-                 print("new data arrived")
-             })
-             .store(in: &cancellables)
+                switch taskCompletion {
+                case .finished:
+                    debug("Successfully fetched data for \(urlString)")
+                case .failure(let error):
+                    debug("Failed to fetch data for \(urlString): \(error)")
+                    completion(nil, error)
+                }
+            }, receiveValue: { retData in
+                completion(retData, nil)
+            })
+            .store(in: &cancellables)
     }
-    
+
     func fetchData<T: Codable>(ofType type: T.Type, from urlString: String, completion: @escaping (T?, Error?) -> Void) {
         guard let url = URL(string: urlString) else {
             completion(nil, URLError(.badURL))

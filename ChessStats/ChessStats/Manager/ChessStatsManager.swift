@@ -23,7 +23,6 @@ class ChessStatsManager: ObservableObject {
     }
     
     func getProfileStat(completion: ((Error?) -> Void)? = nil) {
-        let start = now()
         let profileStat = self.persistenceManager.fetchProfileStat()
         if (profileStat != nil) {
             debug("Found profile stat in swfit data. Date fetched: \(profileStat!.dateFetched)")
@@ -85,55 +84,78 @@ class ChessStatsManager: ObservableObject {
             if (!monthArchive.isCurrentMonth()) { // if not current month, the data won't be new, so no point in fetching again.
                 debug("Fetched day stats by month for past month. No need to fetch again")
                 completion?(nil)
+                return
             }
             else { // current month, check if the app returned from background
                 if (Globals.shared.returnedFromBackground) {
-                    fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false, completion: completion)
                     Globals.shared.returnedFromBackground = false
+                    // will fetch
                 }
                 else {
                     debug("Current month, but the app was always open - no new games. No need to fetch again")
                     completion?(nil)
+                    return
                 }
             }
         }
-        else {
-            fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false, completion: completion)
-        }
-    }
-    
-    private func fetchUserGames(monthArchive: MonthArchive, alsoSaveToData: Bool, completion: ((Error?) -> Void)? = nil) {
-        let start = now()
-        let urls = getArchivesToFetch(for: monthArchive)
-        httpUtil.fetchMultipleData(ofType: Games.self, from: urls) { (data, error) in
-            if (error != nil) {
-                debug("found an error, fetching again...")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    // run again after a second. there might be a problem in Chess.com
-                    self.fetchUserGames(monthArchive: monthArchive, alsoSaveToData: alsoSaveToData, completion: completion)
-                }
-            }
-            let received = now()
-            if let gamesObjects = data {
-                debug("For Months: \(urls) I got from Chess.com \(gamesObjects.count) jsons")
-//                let rawGames = parseGames(from: gamesArray)
-                let userGames = gamesObjects.flatMap {$0.games}.map { game in UserGame.fromChessGame(game: game) }.sorted { $0.endTime < $1.endTime }
-                self.buildDaysStats(monthArchive: monthArchive, games: userGames)
-                if (alsoSaveToData) {
-                    DispatchQueue.main.async {
-                        self.persistenceManager.saveUserGames(games: userGames)
+        
+        fetchUserGames(monthArchive: monthArchive) { (chessComGames, error) in
+            if let games = chessComGames {
+                self.fetchLichessGames(monthArchive: monthArchive) { (lichessGames, error) in
+                    if let liGames = lichessGames {
+                        print("ChessCom: \(games.count), Lichess: \(liGames.count)")
+                        self.buildDaysStats(monthArchive: monthArchive, games: games + liGames)
+                        completion?(nil)
+                    }
+                    else {
+                        completion?(error)
                     }
                 }
-                debug("Fetch User Games - Request: \(received - start). Processing: \(now() - received).")
-                completion?(nil)
             }
-            else if let error = error {
-                debug("Error fetching multiple sites: \(error.localizedDescription)")
+            else {
                 completion?(error)
             }
         }
     }
     
+    private func fetchUserGames(monthArchive: MonthArchive, completion: @escaping (([UserGame]?, Error?) -> Void)) {
+        let urls = getArchivesToFetch(for: monthArchive)
+        httpUtil.fetchMultipleData(ofType: ChessComGames.self, from: urls) { (data, error) in
+            if (error != nil) {
+                debug("found an error, fetching again...")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    // run again after a second. there might be a problem in Chess.com
+                    self.fetchUserGames(monthArchive: monthArchive, completion: completion)
+                }
+            }
+            if let gamesObjects = data {
+                debug("For Months: \(urls) I got from Chess.com \(gamesObjects.count) jsons")
+//                let rawGames = parseGames(from: gamesArray)
+                let userGames = gamesObjects.flatMap {$0.games}.map { game in UserGame.fromChessComGame(game: game) }.sorted { $0.endTime < $1.endTime }
+                completion(userGames, nil)
+            }
+            else if let error = error {
+                debug("Error fetching multiple sites: \(error.localizedDescription)")
+                completion(nil, error)
+            }
+        }
+    }
+    
+    func fetchLichessGames(monthArchive: MonthArchive, completion: @escaping (([UserGame]?, Error?) -> Void)) {
+        let (since, until) = getDatesToFetchFromLichess(for: monthArchive)
+        let url = "https://lichess.org/api/games/user/issaharw?pgnInJson=true&clocks=true&accuracy=true&rated=true&since=\(since)&until=\(until)"
+        httpUtil.fetchLichessData(ofType: LichessGame.self, from: url) { (data, error) in
+            if let games = data {
+                let userGames = games.map { game in UserGame.fromLichessGame(game: game) }.sorted { $0.endTime < $1.endTime }
+                print("Found \(userGames.count) games on lichess")
+                completion(userGames, nil)
+            }
+            else {
+                completion(nil, error)
+            }
+        }
+    }
+
     private func getArchivesToFetch(for archive: MonthArchive) -> [String] {
         let index = chessData.archives.firstIndex(of: archive)!
         if (index == 0) {
@@ -153,7 +175,28 @@ class ChessStatsManager: ObservableObject {
             }
         }
     }
-    
+
+    private func getDatesToFetchFromLichess(for archive: MonthArchive) -> (since: Int64, until: Int64) {
+        let index = chessData.archives.firstIndex(of: archive)!
+        if (index == 0) {
+            if (chessData.archives.count > 1) {
+                return (chessData.archives[1].getStartAndEndOfMonthInMS().startOfMonth, chessData.archives[0].getStartAndEndOfMonthInMS().endOfMonth)
+            }
+            else {
+                let (s, u) = archive.getStartAndEndOfMonthInMS()
+                return (since: s, until: u)
+            }
+        }
+        else {
+            if (chessData.archives.count > 2 && index != chessData.archives.count - 1 ) {
+                return (chessData.archives[index + 1].getStartAndEndOfMonthInMS().startOfMonth, chessData.archives[index - 1].getStartAndEndOfMonthInMS().endOfMonth)
+            }
+            else {
+                return (chessData.archives[index].getStartAndEndOfMonthInMS().startOfMonth, chessData.archives[index - 1].getStartAndEndOfMonthInMS().endOfMonth)
+            }
+        }
+
+    }
     
     private func buildDaysStats(monthArchive: MonthArchive, games: [UserGame]) {
         let gamesByDate = self.groupGamesByDay(games: games)
