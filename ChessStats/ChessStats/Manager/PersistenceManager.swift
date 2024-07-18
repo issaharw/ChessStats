@@ -39,32 +39,32 @@ struct PersistenceManager {
         }
     }
 
-    func fetchUserGames(forMonth: MonthArchive) -> [UserGame] {
-        let year = forMonth.year
-        let month = forMonth.monthIndex
-        let gamesPerMonthDesc = FetchDescriptor<UserGame>(predicate: #Predicate<UserGame>{ game in
-            game.year == year && game.month == month
-        },
-            sortBy: [SortDescriptor(\UserGame.endTime)])
-        let gamesPerMonth = (try? modelContext.fetch(gamesPerMonthDesc)) ?? []
-        return gamesPerMonth
-    }
-    
-    private func fetchAllGames() -> [UserGame] {
-        return (try? modelContext.fetch(FetchDescriptor<UserGame>())) ?? []
-    }
-    
-    func saveUserGames(games: [UserGame]) {
-        let start = now()
-        let allGames = fetchAllGames()
-        games.forEach { newGame in
-            if (!allGames.contains(newGame)) {
-                modelContext.insert(newGame)
-            }
-        }
-        try? modelContext.save()
-        print("Save User Games: \(now() - start). ")
-    }
+//    func fetchUserGames(forMonth: MonthArchive) -> [UserGame] {
+//        let year = forMonth.year
+//        let month = forMonth.monthIndex
+//        let gamesPerMonthDesc = FetchDescriptor<UserGame>(predicate: #Predicate<UserGame>{ game in
+//            game.year == year && game.month == month
+//        },
+//            sortBy: [SortDescriptor(\UserGame.endTime)])
+//        let gamesPerMonth = (try? modelContext.fetch(gamesPerMonthDesc)) ?? []
+//        return gamesPerMonth
+//    }
+//    
+//    private func fetchAllGames() -> [UserGame] {
+//        return (try? modelContext.fetch(FetchDescriptor<UserGame>())) ?? []
+//    }
+//    
+//    func saveUserGames(games: [UserGame]) {
+//        let start = now()
+//        let allGames = fetchAllGames()
+//        games.forEach { newGame in
+//            if (!allGames.contains(newGame)) {
+//                modelContext.insert(newGame)
+//            }
+//        }
+//        try? modelContext.save()
+//        print("Save User Games: \(now() - start). ")
+//    }
     
     func fetchDayStats(forMonth: MonthArchive) -> [DayStats] {
 //        let allDayStatsPerMonth = FetchDescriptor<DayStats>(
