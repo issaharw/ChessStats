@@ -13,7 +13,7 @@ struct MainScreen: View {
     @EnvironmentObject private var chessData: ChessData
     @EnvironmentObject private var statsManager: ChessStatsManager
     @State private var isPresentingLogView = false
-    @State private var chessPlatform = getSelectedPlatform()
+    @State private var chessPlatform = Globals.shared.getSelectedPlatform()
     
     
     var body: some View {
@@ -61,19 +61,25 @@ struct MainScreen: View {
                     Menu {
                         Button(action: {
                             chessPlatform = "Chess.com"
-                            saveSelectedPlatform(platform: chessPlatform)
+                            Globals.shared.saveSelectedPlatform(platform: chessPlatform)
+                            Globals.shared.refetchGamesNeeded = true
+                            self.statsManager.prefetchCurrentMonth()
                         }) {
                             Text("Chess.com")
                         }
                         Button(action: {
                             chessPlatform = "Lichess"
-                            saveSelectedPlatform(platform: chessPlatform)
+                            Globals.shared.saveSelectedPlatform(platform: chessPlatform)
+                            Globals.shared.refetchGamesNeeded = true
+                            self.statsManager.prefetchCurrentMonth()
                         }) {
                             Text("Lichess")
                         }
                         Button(action: {
                             chessPlatform = "Both"
-                            saveSelectedPlatform(platform: chessPlatform)
+                            Globals.shared.saveSelectedPlatform(platform: chessPlatform)
+                            Globals.shared.refetchGamesNeeded = true
+                            self.statsManager.prefetchCurrentMonth()
                         }) {
                             Text("Both")
                         }
@@ -90,7 +96,7 @@ struct MainScreen: View {
         .onChange(of: scenePhase) { _, newPhase in
             if (newPhase == .active) {
                 debug("Scene new phase is ACTIVE")
-                Globals.shared.returnedFromBackground = true
+                Globals.shared.refetchGamesNeeded = true
                 self.statsManager.getGameArchives() { error in
                     debug("Finished fetching game archives")
                     self.statsManager.getProfileStat() { error in

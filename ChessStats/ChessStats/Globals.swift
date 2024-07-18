@@ -11,5 +11,14 @@ struct Globals {
     
     static var shared = Globals()
         
-    var returnedFromBackground = false
+    var refetchGamesNeeded = false
+
+    func getSelectedPlatform() -> String {
+        return UserDefaults.standard.string(forKey: "ChessPlatform") ?? "Both"
+    }
+    
+    func saveSelectedPlatform(platform: String) {
+        UserDefaults.standard.set(platform, forKey: "ChessPlatform")
+    }
+
 }

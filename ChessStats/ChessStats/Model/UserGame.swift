@@ -10,7 +10,6 @@ import SwiftData
 
 let DRAW_RESULTS = ["agreed", "repetition", "stalemate", "insufficient", "50move", "timevsinsufficient"]
 
-@Model
 class UserGame: Identifiable, Equatable {
     let url: String
     let uuid: String

@@ -79,16 +79,16 @@ class ChessStatsManager: ObservableObject {
     
     
     func buildDaysStats(monthArchive: MonthArchive, completion: ((Error?) -> Void)? = nil) {
-        let dayStatsByMonth = self.chessData.dayStatsByMonth[monthArchive]
-        if (dayStatsByMonth != nil && !dayStatsByMonth!.isEmpty) { // if there is data in the model (already fetched)
+        let dayStatsByMonth: [DayStats] = self.chessData.dayStatsByMonth[monthArchive] ?? []
+        if (!dayStatsByMonth.isEmpty) { // if there is data in the model (already fetched)
             if (!monthArchive.isCurrentMonth()) { // if not current month, the data won't be new, so no point in fetching again.
                 debug("Fetched day stats by month for past month. No need to fetch again")
                 completion?(nil)
                 return
             }
             else { // current month, check if the app returned from background
-                if (Globals.shared.returnedFromBackground) {
-                    Globals.shared.returnedFromBackground = false
+                if (Globals.shared.refetchGamesNeeded) {
+                    Globals.shared.refetchGamesNeeded = false
                     // will fetch
                 }
                 else {
@@ -99,21 +99,47 @@ class ChessStatsManager: ObservableObject {
             }
         }
         
-        fetchUserGames(monthArchive: monthArchive) { (chessComGames, error) in
-            if let games = chessComGames {
-                self.fetchLichessGames(monthArchive: monthArchive) { (lichessGames, error) in
-                    if let liGames = lichessGames {
-                        print("ChessCom: \(games.count), Lichess: \(liGames.count)")
-                        self.buildDaysStats(monthArchive: monthArchive, games: games + liGames)
-                        completion?(nil)
-                    }
-                    else {
-                        completion?(error)
+        if (Globals.shared.getSelectedPlatform() == "Both") {
+            fetchUserGames(monthArchive: monthArchive) { (chessComGames, error) in
+                if let games = chessComGames {
+                    self.fetchLichessGames(monthArchive: monthArchive) { (lichessGames, error) in
+                        if let liGames = lichessGames {
+                            print("ChessCom: \(games.count), Lichess: \(liGames.count)")
+                            self.buildDaysStats(monthArchive: monthArchive, games: games + liGames)
+                            completion?(nil)
+                        }
+                        else {
+                            completion?(error)
+                        }
                     }
                 }
+                else {
+                    completion?(error)
+                }
             }
-            else {
-                completion?(error)
+        }
+        else if (Globals.shared.getSelectedPlatform() == "Chess.com") {
+            fetchUserGames(monthArchive: monthArchive) { (chessComGames, error) in
+                if let games = chessComGames {
+                    print("ChessCom: \(games.count)")
+                    self.buildDaysStats(monthArchive: monthArchive, games: games)
+                    completion?(nil)
+                }
+                else {
+                    completion?(error)
+                }
+            }
+        }
+        else {
+            self.fetchLichessGames(monthArchive: monthArchive) { (lichessGames, error) in
+                if let liGames = lichessGames {
+                    print("Lichess: \(liGames.count)")
+                    self.buildDaysStats(monthArchive: monthArchive, games: liGames)
+                    completion?(nil)
+                }
+                else {
+                    completion?(error)
+                }
             }
         }
     }
@@ -238,7 +264,8 @@ class ChessStatsManager: ObservableObject {
     
     
     func buildDayGameTypeStats(timeClass: String, date: Date, dateGames: [UserGame], allGames: [UserGame]) -> DayGameTypeStats {
-        return DayGameTypeStats(timeClass: timeClass,
+        return DayGameTypeStats(platform: timeContorlToPlatform[timeClass]!,
+                                timeClass: timeClass,
                                 date: date,
                                 startRating: findRatingBeforeGame(allGames: allGames, ofGame: dateGames.first!),
                                 endRating: dateGames.last?.rating ?? 0,
