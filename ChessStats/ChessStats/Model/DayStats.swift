@@ -24,6 +24,7 @@ struct DayStats: Identifiable {
 }
 
 struct DayGameTypeStats: Identifiable {
+    let platform: String
     let timeClass: String
     let date: Date
     let startRating: Int
@@ -31,7 +32,8 @@ struct DayGameTypeStats: Identifiable {
     let highestRating: Int
     let games: [UserGame]
 
-    init(timeClass: String, date: Date, startRating: Int, endRating: Int, highestRating: Int, games: [UserGame]) {
+    init(platform: String, timeClass: String, date: Date, startRating: Int, endRating: Int, highestRating: Int, games: [UserGame]) {
+        self.platform = platform
         self.timeClass = timeClass
         self.date = date
         self.startRating = startRating
@@ -51,4 +53,5 @@ struct DayGameTypeStats: Identifiable {
 
 let sampleDayStats = DayStats(date: Date(), numberOfGames: 145, gameTypeStats: [])
 
-private let sorting = ["bullet": 0, "blitz": 1, "rapid": 2, "daily": 3]
+private let sorting = ["bullet": 0, "blitz": 1, "rapid": 2, "libullet": 3, "liblitz": 4, "lirapid": 5, "daily": 6]
+let timeContorlToPlatform = ["bullet": "Chess.com", "blitz": "Chess.com", "rapid": "Chess.com", "libullet": "Lichess", "liblitz": "Lichess", "lirapid": "Lichess", "daily": "Chess.com"]

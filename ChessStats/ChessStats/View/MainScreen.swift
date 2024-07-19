@@ -12,8 +12,8 @@ struct MainScreen: View {
     
     @EnvironmentObject private var chessData: ChessData
     @EnvironmentObject private var statsManager: ChessStatsManager
-    
     @State private var isPresentingLogView = false
+    @State private var chessPlatform = Globals.shared.getSelectedPlatform()
     
     
     var body: some View {
@@ -57,13 +57,46 @@ struct MainScreen: View {
                         Image(systemName: "calendar")
                     }
                 }
+                ToolbarItem(placement: .automatic) {
+                    Menu {
+                        Button(action: {
+                            chessPlatform = "Chess.com"
+                            Globals.shared.saveSelectedPlatform(platform: chessPlatform)
+                            Globals.shared.refetchGamesNeeded = true
+                            self.statsManager.prefetchCurrentMonth()
+                        }) {
+                            Text("Chess.com")
+                        }
+                        Button(action: {
+                            chessPlatform = "Lichess"
+                            Globals.shared.saveSelectedPlatform(platform: chessPlatform)
+                            Globals.shared.refetchGamesNeeded = true
+                            self.statsManager.prefetchCurrentMonth()
+                        }) {
+                            Text("Lichess")
+                        }
+                        Button(action: {
+                            chessPlatform = "Both"
+                            Globals.shared.saveSelectedPlatform(platform: chessPlatform)
+                            Globals.shared.refetchGamesNeeded = true
+                            self.statsManager.prefetchCurrentMonth()
+                        }) {
+                            Text("Both")
+                        }
+                    } label: {
+                        HStack {
+                            Text("Platform: \(chessPlatform)")
+                            Image(systemName: "ellipsis.circle")
+                        }
+                    }
+                }
+
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
             if (newPhase == .active) {
                 debug("Scene new phase is ACTIVE")
-                
-                Globals.shared.returnedFromBackground = true
+                Globals.shared.refetchGamesNeeded = true
                 self.statsManager.getGameArchives() { error in
                     debug("Finished fetching game archives")
                     self.statsManager.getProfileStat() { error in
@@ -86,7 +119,6 @@ struct MainScreen: View {
                     }
             }
         }
-
     }
 }
 

@@ -19,8 +19,7 @@ struct ChessStatsApp: App {
     var modelContainer: ModelContainer = {
         let schema = Schema([
             ProfileStat.self,
-            MonthArchive.self,
-            UserGame.self
+            MonthArchive.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

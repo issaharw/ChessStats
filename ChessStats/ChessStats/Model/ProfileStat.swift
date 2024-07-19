@@ -15,20 +15,26 @@ class ProfileStat: Identifiable {
     let rapid: TimeClassStats
     let bullet: TimeClassStats
     let blitz: TimeClassStats
+    let libullet: TimeClassStats
+    let liblitz: TimeClassStats
     
-    init(dateFetched: Date, daily: TimeClassStats, rapid: TimeClassStats, bullet: TimeClassStats, blitz: TimeClassStats) {
+    init(dateFetched: Date, daily: TimeClassStats, rapid: TimeClassStats, bullet: TimeClassStats, blitz: TimeClassStats, libullet: TimeClassStats, liblitz: TimeClassStats) {
         self.dateFetched = dateFetched
         self.daily = daily
         self.rapid = rapid
         self.bullet = bullet
         self.blitz = blitz
+        self.libullet = libullet
+        self.liblitz = liblitz
     }
     
-    convenience init(from: ProfileStatRecord, dateFetched: Date = Date()) {
+    convenience init(from: ProfileStatRecord, libullet: LichessTimeClassStats, liblitz: LichessTimeClassStats, dateFetched: Date = Date()) {
         self.init(dateFetched: dateFetched, daily: TimeClassStats(from: from.daily, timeClass: "daily"),
                                             rapid: TimeClassStats(from: from.rapid, timeClass: "rapid"),
                                             bullet: TimeClassStats(from: from.bullet, timeClass: "bullet"),
-                                            blitz: TimeClassStats(from: from.blitz, timeClass: "blitz"))
+                                            blitz: TimeClassStats(from: from.blitz, timeClass: "blitz"),
+                                            libullet: TimeClassStats(from: libullet, timeClass: "libullet"),
+                                            liblitz: TimeClassStats(from: liblitz, timeClass: "liblitz"))
     }
     
     var id: Date {
@@ -39,68 +45,27 @@ class ProfileStat: Identifiable {
 @Model
 class TimeClassStats: Identifiable {
     let timeClass: String
-    let last: RatingStats
-    let best: RatingStats
-    let record: TimeClassRecord
+    let current: Int
+    let best: Int
     
-    init(timeClass: String, last: RatingStats, best: RatingStats, record: TimeClassRecord) {
+    init(timeClass: String, current: Int, best: Int) {
         self.timeClass = timeClass
-        self.last = last
+        self.current = current
         self.best = best
-        self.record = record
     }
     
     convenience init(from: ChessModeStats, timeClass: String) {
-        self.init(timeClass: timeClass, last: RatingStats(from: from.last), best: RatingStats(from: from.best), record: TimeClassRecord(from: from.record))
+        self.init(timeClass: timeClass, current: from.last.rating, best: from.best.rating)
+    }
+    
+    convenience init(from: LichessTimeClassStats, timeClass: String) {
+        self.init(timeClass: timeClass, current: Int(from.perf.glicko.rating), best: from.stat.highest.int)
     }
     
     var id: String {
         timeClass
     }
 }
-
-@Model
-class RatingStats: Identifiable {
-    let rating: Int
-    let date: Int
-    
-    init(rating: Int, date: Int) {
-        self.rating = rating
-        self.date = date
-    }
-    
-    convenience init(from: ChessGameStats) {
-        self.init(rating: from.rating, date: from.date)
-    }
-    
-    var id: String {
-        "\(date) - \(rating)"
-    }
-}
-
-@Model
-class TimeClassRecord {
-    let win: Int
-    let loss: Int
-    let draw: Int
-    let timePerMove: Int?
-    let timeoutPercent: Double?
-
-    init(win: Int, loss: Int, draw: Int, timePerMove: Int?, timeoutPercent: Double?) {
-        self.win = win
-        self.loss = loss
-        self.draw = draw
-        self.timePerMove = timePerMove
-        self.timeoutPercent = timeoutPercent
-    }
-
-    convenience init(from: ChessRecord) {
-        self.init(win: from.win, loss: from.loss, draw: from.draw, timePerMove: from.timePerMove, timeoutPercent: from.timeoutPercent)
-    }
-}
-
-
-
 
 struct ProfileStatRecord: Codable {
     let daily: ChessModeStats
@@ -119,7 +84,6 @@ struct ProfileStatRecord: Codable {
 struct ChessModeStats: Codable {
     let last: ChessGameStats
     let best: ChessGameStats
-    let record: ChessRecord
 }
 
 struct ChessGameStats: Codable {
@@ -127,17 +91,27 @@ struct ChessGameStats: Codable {
     let date: Int
 }
 
-struct ChessRecord: Codable {
-    let win, loss, draw: Int
-    let timePerMove: Int?
-    let timeoutPercent: Double?
 
-    enum CodingKeys: String, CodingKey {
-        case win, loss, draw
-        case timePerMove = "time_per_move"
-        case timeoutPercent = "timeout_percent"
-    }
+// ------------------------------ LICHESS Objects -------------------------------
+struct LichessTimeClassStats: Codable {
+    let perf: Perf
+    let stat: Stat
 }
+
+struct Perf: Codable {
+    let glicko: Glicko
+}
+struct Glicko: Codable {
+    let rating: Double
+}
+
+struct Stat: Codable {
+    let highest: Highest
+}
+struct Highest: Codable {
+    let int: Int
+}
+
 
 
 // Example of decoding from JSON string:
@@ -228,13 +202,251 @@ let profileStatJson = """
 }
 """.data(using: .utf8)!
 
-let sampleProfileStat = parseExampleJson(json: profileStatJson)!
+let lichessPerfJson = """
+{
+    "user": {
+        "name": "issaharw"
+    },
+    "perf": {
+        "glicko": {
+            "rating": 1232.5,
+            "deviation": 45.07
+        },
+        "nb": 370,
+        "progress": 7
+    },
+    "rank": 226284,
+    "percentile": 25.1,
+    "stat": {
+        "count": {
+            "berserk": 0,
+            "win": 181,
+            "all": 370,
+            "seconds": 89298,
+            "opAvg": 1186.79,
+            "draw": 16,
+            "tour": 0,
+            "disconnects": 0,
+            "rated": 370,
+            "loss": 173
+        },
+        "resultStreak": {
+            "win": {
+                "cur": {
+                    "v": 0
+                },
+                "max": {
+                    "v": 7,
+                    "from": {
+                        "at": "2024-06-30T16:48:56.869Z",
+                        "gameId": "FAPYV0bo"
+                    },
+                    "to": {
+                        "at": "2024-06-30T18:00:42.748Z",
+                        "gameId": "eSJSJCwk"
+                    }
+                }
+            },
+            "loss": {
+                "cur": {
+                    "v": 2,
+                    "from": {
+                        "at": "2024-07-19T05:06:49.2Z",
+                        "gameId": "d902wQTX"
+                    },
+                    "to": {
+                        "at": "2024-07-19T05:15:30.515Z",
+                        "gameId": "8mfJiz00"
+                    }
+                },
+                "max": {
+                    "v": 6,
+                    "from": {
+                        "at": "2024-07-04T12:21:54.117Z",
+                        "gameId": "sutECy2M"
+                    },
+                    "to": {
+                        "at": "2024-07-04T15:19:06.353Z",
+                        "gameId": "dharDsKY"
+                    }
+                }
+            }
+        },
+        "lowest": {
+            "int": 1086,
+            "at": "2024-05-30T11:09:11.349Z",
+            "gameId": "PfbXWf4r"
+        },
+        "worstLosses": {
+            "results": [
+                {
+                    "opRating": 1048,
+                    "opId": {
+                        "id": "khatri_chirag_313",
+                        "name": "Khatri_Chirag_313",
+                        "title": null
+                    },
+                    "at": "2024-05-31T13:01:41.098Z",
+                    "gameId": "UGh0hzK7"
+                },
+                {
+                    "opRating": 1051,
+                    "opId": {
+                        "id": "mujere-1992",
+                        "name": "Mujere-1992",
+                        "title": null
+                    },
+                    "at": "2024-06-11T14:09:41.655Z",
+                    "gameId": "otJ7DeEi"
+                },
+                {
+                    "opRating": 1069,
+                    "opId": {
+                        "id": "tateh",
+                        "name": "TateH",
+                        "title": null
+                    },
+                    "at": "2024-06-11T11:32:39.417Z",
+                    "gameId": "nHdqAR7M"
+                },
+                {
+                    "opRating": 1075,
+                    "opId": {
+                        "id": "krish8617",
+                        "name": "krish8617",
+                        "title": null
+                    },
+                    "at": "2024-05-30T11:09:11.349Z",
+                    "gameId": "PfbXWf4r"
+                },
+                {
+                    "opRating": 1086,
+                    "opId": {
+                        "id": "kopejsk",
+                        "name": "Kopejsk",
+                        "title": null
+                    },
+                    "at": "2024-06-07T05:16:18.986Z",
+                    "gameId": "bsuXzE8C"
+                }
+            ]
+        },
+        "perfType": {
+            "key": "bullet",
+            "name": "Bullet"
+        },
+        "id": "issaharw/1",
+        "bestWins": {
+            "results": [
+                {
+                    "opRating": 1333,
+                    "opId": {
+                        "id": "sujayjaju",
+                        "name": "SujayJaju",
+                        "title": null
+                    },
+                    "at": "2024-06-16T05:45:02.567Z",
+                    "gameId": "EsFW31j1"
+                },
+                {
+                    "opRating": 1321,
+                    "opId": {
+                        "id": "alexisj0509",
+                        "name": "Alexisj0509",
+                        "title": null
+                    },
+                    "at": "2024-07-12T13:43:16.524Z",
+                    "gameId": "3Xxtkr1D"
+                },
+                {
+                    "opRating": 1313,
+                    "opId": {
+                        "id": "spellord",
+                        "name": "Spellord",
+                        "title": null
+                    },
+                    "at": "2024-02-04T02:01:09.418Z",
+                    "gameId": "gVWsajYw"
+                },
+                {
+                    "opRating": 1287,
+                    "opId": {
+                        "id": "nando144",
+                        "name": "Nando144",
+                        "title": null
+                    },
+                    "at": "2024-02-08T22:55:28.935Z",
+                    "gameId": "Hs5eV8IM"
+                },
+                {
+                    "opRating": 1280,
+                    "opId": {
+                        "id": "maeitze",
+                        "name": "maeitze",
+                        "title": null
+                    },
+                    "at": "2024-07-04T11:14:45.67Z",
+                    "gameId": "qyINGZPs"
+                }
+            ]
+        },
+        "userId": {
+            "id": "issaharw",
+            "name": "issaharw",
+            "title": null
+        },
+        "playStreak": {
+            "nb": {
+                "cur": {
+                    "v": 0
+                },
+                "max": {
+                    "v": 65,
+                    "from": {
+                        "at": "2024-06-11T09:28:30.965Z",
+                        "gameId": "aWlAWJzn"
+                    },
+                    "to": {
+                        "at": "2024-06-11T16:09:59.437Z",
+                        "gameId": "HW19HYsm"
+                    }
+                }
+            },
+            "time": {
+                "cur": {
+                    "v": 0
+                },
+                "max": {
+                    "v": 15205,
+                    "from": {
+                        "at": "2024-06-11T09:28:30.965Z",
+                        "gameId": "aWlAWJzn"
+                    },
+                    "to": {
+                        "at": "2024-06-11T16:09:59.437Z",
+                        "gameId": "HW19HYsm"
+                    }
+                }
+            },
+            "lastDate": "2024-07-19T05:15:30.515Z"
+        },
+        "highest": {
+            "int": 1243,
+            "at": "2024-07-19T05:06:38.837Z",
+            "gameId": "yOvk5esT"
+        }
+    }
+}
+""".data(using: .utf8)!
 
-func parseExampleJson(json: Data) -> ProfileStat? {
+let sampleProfileStat = parseExampleJson(json: profileStatJson, lichessJson: lichessPerfJson)!
+
+func parseExampleJson(json: Data, lichessJson: Data) -> ProfileStat? {
     let decoder = JSONDecoder()
     do {
         let stat = try decoder.decode(ProfileStatRecord.self, from: json)
-        return ProfileStat(from: stat)
+        let lichessStat = try decoder.decode(LichessTimeClassStats.self, from: lichessJson)
+        return ProfileStat(from: stat, libullet: lichessStat, liblitz: lichessStat)
     } catch {
         print("Failed to decode JSON: \(error)")
         return nil

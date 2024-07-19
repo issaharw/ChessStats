@@ -23,7 +23,6 @@ class ChessStatsManager: ObservableObject {
     }
     
     func getProfileStat(completion: ((Error?) -> Void)? = nil) {
-        let start = now()
         let profileStat = self.persistenceManager.fetchProfileStat()
         if (profileStat != nil) {
             debug("Found profile stat in swfit data. Date fetched: \(profileStat!.dateFetched)")
@@ -32,10 +31,26 @@ class ChessStatsManager: ObservableObject {
         
         httpUtil.fetchData(ofType: ProfileStatRecord.self, from: "https://api.chess.com/pub/player/issaharw/stats") { (data, error) in
             if let profileStat = data {
-                DispatchQueue.main.async {
-                    self.chessData.profileStat = ProfileStat(from: profileStat)
-                    self.persistenceManager.saveProfileStat(stat: self.chessData.profileStat!)
-                    completion?(nil)
+                self.httpUtil.fetchLichessObject(ofType: LichessTimeClassStats.self, from: "https://lichess.org/api/user/issaharw/perf/bullet") { (data, error) in
+                    if let libullet = data {
+                        self.httpUtil.fetchLichessObject(ofType: LichessTimeClassStats.self, from: "https://lichess.org/api/user/issaharw/perf/blitz") { (data, error) in
+                            if let liblitz = data {
+                                DispatchQueue.main.async {
+                                    self.chessData.profileStat = ProfileStat(from: profileStat, libullet: libullet, liblitz: liblitz)
+                                    self.persistenceManager.saveProfileStat(stat: self.chessData.profileStat!)
+                                    completion?(nil)
+                                }
+                            }
+                            if let error = error {
+                                debug("Error getting Profile Stat: \(error.localizedDescription)")
+                                completion?(error)
+                            }
+                        }
+                    }
+                    if let error = error {
+                        debug("Error getting Profile Stat from Lichess: \(error.localizedDescription)")
+                        completion?(error)
+                    }
                 }
             }
             else if let error = error {
@@ -80,60 +95,109 @@ class ChessStatsManager: ObservableObject {
     
     
     func buildDaysStats(monthArchive: MonthArchive, completion: ((Error?) -> Void)? = nil) {
-        let dayStatsByMonth = self.chessData.dayStatsByMonth[monthArchive]
-        if (dayStatsByMonth != nil && !dayStatsByMonth!.isEmpty) { // if there is data in the model (already fetched)
+        let dayStatsByMonth: [DayStats] = self.chessData.dayStatsByMonth[monthArchive] ?? []
+        if (!dayStatsByMonth.isEmpty) { // if there is data in the model (already fetched)
             if (!monthArchive.isCurrentMonth()) { // if not current month, the data won't be new, so no point in fetching again.
                 debug("Fetched day stats by month for past month. No need to fetch again")
                 completion?(nil)
+                return
             }
             else { // current month, check if the app returned from background
-                if (Globals.shared.returnedFromBackground) {
-                    fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false, completion: completion)
-                    Globals.shared.returnedFromBackground = false
+                if (Globals.shared.refetchGamesNeeded) {
+                    Globals.shared.refetchGamesNeeded = false
+                    // will fetch
                 }
                 else {
                     debug("Current month, but the app was always open - no new games. No need to fetch again")
                     completion?(nil)
+                    return
+                }
+            }
+        }
+        
+        if (Globals.shared.getSelectedPlatform() == "Both") {
+            fetchUserGames(monthArchive: monthArchive) { (chessComGames, error) in
+                if let games = chessComGames {
+                    self.fetchLichessGames(monthArchive: monthArchive) { (lichessGames, error) in
+                        if let liGames = lichessGames {
+                            print("ChessCom: \(games.count), Lichess: \(liGames.count)")
+                            self.buildDaysStats(monthArchive: monthArchive, games: games + liGames)
+                            completion?(nil)
+                        }
+                        else {
+                            completion?(error)
+                        }
+                    }
+                }
+                else {
+                    completion?(error)
+                }
+            }
+        }
+        else if (Globals.shared.getSelectedPlatform() == "Chess.com") {
+            fetchUserGames(monthArchive: monthArchive) { (chessComGames, error) in
+                if let games = chessComGames {
+                    print("ChessCom: \(games.count)")
+                    self.buildDaysStats(monthArchive: monthArchive, games: games)
+                    completion?(nil)
+                }
+                else {
+                    completion?(error)
                 }
             }
         }
         else {
-            fetchUserGames(monthArchive: monthArchive, alsoSaveToData: false, completion: completion)
+            self.fetchLichessGames(monthArchive: monthArchive) { (lichessGames, error) in
+                if let liGames = lichessGames {
+                    print("Lichess: \(liGames.count)")
+                    self.buildDaysStats(monthArchive: monthArchive, games: liGames)
+                    completion?(nil)
+                }
+                else {
+                    completion?(error)
+                }
+            }
         }
     }
     
-    private func fetchUserGames(monthArchive: MonthArchive, alsoSaveToData: Bool, completion: ((Error?) -> Void)? = nil) {
-        let start = now()
+    private func fetchUserGames(monthArchive: MonthArchive, completion: @escaping (([UserGame]?, Error?) -> Void)) {
         let urls = getArchivesToFetch(for: monthArchive)
-        httpUtil.fetchMultipleData(ofType: Games.self, from: urls) { (data, error) in
+        httpUtil.fetchMultipleData(ofType: ChessComGames.self, from: urls) { (data, error) in
             if (error != nil) {
                 debug("found an error, fetching again...")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                     // run again after a second. there might be a problem in Chess.com
-                    self.fetchUserGames(monthArchive: monthArchive, alsoSaveToData: alsoSaveToData, completion: completion)
+                    self.fetchUserGames(monthArchive: monthArchive, completion: completion)
                 }
             }
-            let received = now()
             if let gamesObjects = data {
                 debug("For Months: \(urls) I got from Chess.com \(gamesObjects.count) jsons")
 //                let rawGames = parseGames(from: gamesArray)
-                let userGames = gamesObjects.flatMap {$0.games}.map { game in UserGame.fromChessGame(game: game) }.sorted { $0.endTime < $1.endTime }
-                self.buildDaysStats(monthArchive: monthArchive, games: userGames)
-                if (alsoSaveToData) {
-                    DispatchQueue.main.async {
-                        self.persistenceManager.saveUserGames(games: userGames)
-                    }
-                }
-                debug("Fetch User Games - Request: \(received - start). Processing: \(now() - received).")
-                completion?(nil)
+                let userGames = gamesObjects.flatMap {$0.games}.map { game in UserGame.fromChessComGame(game: game) }.sorted { $0.endTime < $1.endTime }
+                completion(userGames, nil)
             }
             else if let error = error {
                 debug("Error fetching multiple sites: \(error.localizedDescription)")
-                completion?(error)
+                completion(nil, error)
             }
         }
     }
     
+    func fetchLichessGames(monthArchive: MonthArchive, completion: @escaping (([UserGame]?, Error?) -> Void)) {
+        let (since, until) = getDatesToFetchFromLichess(for: monthArchive)
+        let url = "https://lichess.org/api/games/user/issaharw?pgnInJson=true&clocks=true&accuracy=true&rated=true&since=\(since)&until=\(until)"
+        httpUtil.fetchLichessData(ofType: LichessGame.self, from: url) { (data, error) in
+            if let games = data {
+                let userGames = games.map { game in UserGame.fromLichessGame(game: game) }.sorted { $0.endTime < $1.endTime }
+                print("Found \(userGames.count) games on lichess")
+                completion(userGames, nil)
+            }
+            else {
+                completion(nil, error)
+            }
+        }
+    }
+
     private func getArchivesToFetch(for archive: MonthArchive) -> [String] {
         let index = chessData.archives.firstIndex(of: archive)!
         if (index == 0) {
@@ -153,7 +217,28 @@ class ChessStatsManager: ObservableObject {
             }
         }
     }
-    
+
+    private func getDatesToFetchFromLichess(for archive: MonthArchive) -> (since: Int64, until: Int64) {
+        let index = chessData.archives.firstIndex(of: archive)!
+        if (index == 0) {
+            if (chessData.archives.count > 1) {
+                return (chessData.archives[1].getStartAndEndOfMonthInMS().startOfMonth, chessData.archives[0].getStartAndEndOfMonthInMS().endOfMonth)
+            }
+            else {
+                let (s, u) = archive.getStartAndEndOfMonthInMS()
+                return (since: s, until: u)
+            }
+        }
+        else {
+            if (chessData.archives.count > 2 && index != chessData.archives.count - 1 ) {
+                return (chessData.archives[index + 1].getStartAndEndOfMonthInMS().startOfMonth, chessData.archives[index - 1].getStartAndEndOfMonthInMS().endOfMonth)
+            }
+            else {
+                return (chessData.archives[index].getStartAndEndOfMonthInMS().startOfMonth, chessData.archives[index - 1].getStartAndEndOfMonthInMS().endOfMonth)
+            }
+        }
+
+    }
     
     private func buildDaysStats(monthArchive: MonthArchive, games: [UserGame]) {
         let gamesByDate = self.groupGamesByDay(games: games)
@@ -195,7 +280,8 @@ class ChessStatsManager: ObservableObject {
     
     
     func buildDayGameTypeStats(timeClass: String, date: Date, dateGames: [UserGame], allGames: [UserGame]) -> DayGameTypeStats {
-        return DayGameTypeStats(timeClass: timeClass,
+        return DayGameTypeStats(platform: timeContorlToPlatform[timeClass]!,
+                                timeClass: timeClass,
                                 date: date,
                                 startRating: findRatingBeforeGame(allGames: allGames, ofGame: dateGames.first!),
                                 endRating: dateGames.last?.rating ?? 0,

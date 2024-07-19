@@ -7,12 +7,12 @@
 
 import Foundation
 
-struct Games: Codable {
-    let games: [Game]
+struct ChessComGames: Codable {
+    let games: [ChessComGame]
 }
 
 // Main structure for the Chess game
-struct Game: Codable, Identifiable{
+struct ChessComGame: Codable, Identifiable{
     let url: String
     let pgn: String
     let timeControl: String
@@ -97,10 +97,10 @@ private let sampleJson = """
 
 let sampleGame = parseGameJson(json: sampleJson)
 
-private func parseGameJson(json: Data) -> Game? {
+private func parseGameJson(json: Data) -> ChessComGame? {
     let decoder = JSONDecoder()
     do {
-        return try decoder.decode(Game.self, from: json)
+        return try decoder.decode(ChessComGame.self, from: json)
     } catch {
         print("Failed to decode JSON: \(error)")
         return nil

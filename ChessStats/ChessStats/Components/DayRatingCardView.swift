@@ -54,5 +54,5 @@ struct StatView: View {
 }
 
 #Preview {
-    DayRatingCardView(stat: DayGameTypeStats(timeClass: "bullet", date: Date(), startRating: 900, endRating: 930, highestRating: 930, games: []))
+    DayRatingCardView(stat: DayGameTypeStats(platform: "Chess.com", timeClass: "bullet", date: Date(), startRating: 900, endRating: 930, highestRating: 930, games: []))
 }

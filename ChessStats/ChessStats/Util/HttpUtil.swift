@@ -11,42 +11,18 @@ import Combine
 class HttpUtil {
     var cancellables = Set<AnyCancellable>()
     
-    func fetchDataLichess(from urlString: String) {
+    func fetchLichessObject<T: Codable>(ofType type: T.Type, from urlString: String, completion: @escaping (T?, Error?) -> Void) {
         guard let url = URL(string: urlString) else {
+            completion(nil, URLError(.badURL))
             return
         }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.addValue("*/*", forHTTPHeaderField: "Accept")
-        request.addValue("Bearer lip_y4ND925E8bPQyI3uOzVu", forHTTPHeaderField: "Authorization")
-
-        let task = URLSession.shared.dataTaskPublisher(for: request)
-            .tryMap { output -> Data in
-                // Check for HTTP response status code if needed
-                guard let httpResponse = output.response as? HTTPURLResponse else {
-                    throw URLError(.badServerResponse)
-                }
-                if (httpResponse.statusCode != 200) {
-                    debug("Response error for \(urlString). Status: \(httpResponse.statusCode). Body: \(output.data)")
-                    throw URLError(.badServerResponse)
-                }
-                return output.data
-            }
-            .eraseToAnyPublisher()
-
-        task
-            .sink(receiveCompletion: { taskCompletion in
-                 switch taskCompletion {
-                 case .finished:
-                     debug("Successfully fetched data for \(urlString)")
-                 case .failure(let error):
-                     debug("Failed to fetch data for \(urlString): \(error)")
-                 }
-             }, receiveValue: { retData in
-                 print("new data arrived")
-             })
-             .store(in: &cancellables)
+        request.addValue("application/json", forHTTPHeaderField: "Accept")
+        request.addValue("username: issaharw, email: issahar.wss@gmail.com", forHTTPHeaderField: "User-Agent")
+        request.addValue("Bearer \(lichessToken)", forHTTPHeaderField: "Authorization")
+        fetchDataGeneral(ofType: type, request: request, completion: completion)
     }
     
     func fetchData<T: Codable>(ofType type: T.Type, from urlString: String, completion: @escaping (T?, Error?) -> Void) {
@@ -59,7 +35,10 @@ class HttpUtil {
         request.httpMethod = "GET"
         request.addValue("application/json", forHTTPHeaderField: "Accept")
         request.addValue("username: issaharw, email: issahar.wss@gmail.com", forHTTPHeaderField: "User-Agent")
-
+        fetchDataGeneral(ofType: type, request: request, completion: completion)
+    }
+    
+    private func fetchDataGeneral<T: Codable>(ofType type: T.Type, request: URLRequest, completion: @escaping (T?, Error?) -> Void) {
         let task = URLSession.shared.dataTaskPublisher(for: request)
             .tryMap { output -> Data in
                 // Check for HTTP response status code if needed
@@ -67,7 +46,7 @@ class HttpUtil {
                     throw URLError(.badServerResponse)
                 }
                 if (httpResponse.statusCode != 200) {
-                    debug("Response error for \(urlString). Status: \(httpResponse.statusCode). Body: \(output.data)")
+                    debug("Response error for \(String(describing: request.url)). Status: \(httpResponse.statusCode). Body: \(output.data)")
                     throw URLError(.badServerResponse)
                 }
                 return output.data
@@ -78,7 +57,7 @@ class HttpUtil {
                     let object = try JSONDecoder().decode(T.self, from: data)
                     return object
                 } catch {
-                    debugData(header: "Decoding issue for \(urlString)", data: String(data: data, encoding: .utf8)!)
+                    debugData(header: "Decoding issue for \(String(describing: request.url))", data: String(data: data, encoding: .utf8)!)
                     throw URLError(.badServerResponse)
                 }
             }
@@ -88,9 +67,9 @@ class HttpUtil {
             .sink(receiveCompletion: { taskCompletion in
                  switch taskCompletion {
                  case .finished:
-                     debug("Successfully fetched data for \(urlString)")
+                     debug("Successfully fetched data for \(String(describing: request.url))")
                  case .failure(let error):
-                     debug("Failed to fetch data for \(urlString): \(error)")
+                     debug("Failed to fetch data for \(String(describing: request.url)): \(error)")
                      completion(nil, error)
                  }
              }, receiveValue: { retData in
@@ -161,4 +140,56 @@ class HttpUtil {
              })
              .store(in: &cancellables)
     }
+
+    func fetchLichessData<T: Codable>(ofType type: T.Type, from urlString: String, completion: @escaping ([T]?, Error?) -> Void) {
+        guard let url = URL(string: urlString) else {
+            completion(nil, URLError(.badURL))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.addValue("application/x-ndjson", forHTTPHeaderField: "Accept")
+        request.addValue("username: issaharw, email: issahar.wss@gmail.com", forHTTPHeaderField: "User-Agent")
+        request.addValue("Bearer \(lichessToken)", forHTTPHeaderField: "Authorization")
+        
+        let task = URLSession.shared.dataTaskPublisher(for: request)
+            .tryMap { data, response -> String in
+                guard let httpResponse = response as? HTTPURLResponse,
+                      httpResponse.statusCode == 200 else {
+                    throw URLError(.badServerResponse)
+                }
+                return String(decoding: data, as: UTF8.self)
+            }
+            .flatMap { ndjsonString in
+                return ndjsonString
+                    .split(separator: "\n")
+                    .publisher
+                    .map { String($0) }
+            }
+            .tryCompactMap { line -> T? in
+                guard let data = line.data(using: String.Encoding.utf8) else {
+                    throw URLError(.cannotParseResponse)
+                }
+                return try JSONDecoder().decode(T.self, from: data)
+            }
+            .collect()
+            .eraseToAnyPublisher()
+        
+        task
+            .sink(receiveCompletion: { taskCompletion in
+                switch taskCompletion {
+                case .finished:
+                    debug("Successfully fetched data for \(urlString)")
+                case .failure(let error):
+                    debug("Failed to fetch data for \(urlString): \(error)")
+                    completion(nil, error)
+                }
+            }, receiveValue: { retData in
+                completion(retData, nil)
+            })
+            .store(in: &cancellables)
+    }
+    
+
 }
