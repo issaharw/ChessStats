@@ -17,10 +17,12 @@ struct ProfileStatView: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 15) {
-                GameStatCard(title: "bullet", rating: chessData.profileStat?.bullet.last.rating ?? 0, highest: chessData.profileStat?.bullet.best.rating ?? 0)
-                GameStatCard(title: "blitz", rating: chessData.profileStat?.blitz.last.rating ?? 0, highest: chessData.profileStat?.blitz.best.rating ?? 0)
-                GameStatCard(title: "rapid", rating: chessData.profileStat?.rapid.last.rating ?? 0, highest: chessData.profileStat?.rapid.best.rating ?? 0)
-                GameStatCard(title: "daily", rating: chessData.profileStat?.daily.last.rating ?? 0, highest: chessData.profileStat?.daily.best.rating ?? 0)
+                GameStatCard(title: "bullet", rating: chessData.profileStat?.bullet.current ?? 0, highest: chessData.profileStat?.bullet.best ?? 0)
+                GameStatCard(title: "blitz", rating: chessData.profileStat?.blitz.current ?? 0, highest: chessData.profileStat?.blitz.best ?? 0)
+                GameStatCard(title: "libullet", rating: chessData.profileStat?.libullet.current ?? 0, highest: chessData.profileStat?.libullet.best ?? 0)
+                GameStatCard(title: "liblitz", rating: chessData.profileStat?.liblitz.current ?? 0, highest: chessData.profileStat?.liblitz.best ?? 0)
+                GameStatCard(title: "rapid", rating: chessData.profileStat?.rapid.current ?? 0, highest: chessData.profileStat?.rapid.best ?? 0)
+                GameStatCard(title: "daily", rating: chessData.profileStat?.daily.current ?? 0, highest: chessData.profileStat?.daily.best ?? 0)
                 TimeCard(title: chessData.profileStat?.dateFetched.timeFormatted() ?? "00:00")
             }
             .padding()
