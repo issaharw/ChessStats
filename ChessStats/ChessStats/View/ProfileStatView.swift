@@ -5,28 +5,65 @@
 //  Created by Issahar Weiss on 12/05/2024.
 //
 
-import SwiftUI
-
+import UniformTypeIdentifiers
 import SwiftUI
 
 struct ProfileStatView: View {
 
     @EnvironmentObject private var chessData: ChessData
     @EnvironmentObject private var statsManager: ChessStatsManager
+    @State private var timeClasses: [String] = Globals.shared.timeClassSorting
+    @State private var draggedItem: String? = nil
+    
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 15) {
-                GameStatCard(title: "bullet", rating: chessData.profileStat?.bullet.current ?? 0, highest: chessData.profileStat?.bullet.best ?? 0)
-                GameStatCard(title: "blitz", rating: chessData.profileStat?.blitz.current ?? 0, highest: chessData.profileStat?.blitz.best ?? 0)
-                GameStatCard(title: "libullet", rating: chessData.profileStat?.libullet.current ?? 0, highest: chessData.profileStat?.libullet.best ?? 0)
-                GameStatCard(title: "liblitz", rating: chessData.profileStat?.liblitz.current ?? 0, highest: chessData.profileStat?.liblitz.best ?? 0)
-                GameStatCard(title: "rapid", rating: chessData.profileStat?.rapid.current ?? 0, highest: chessData.profileStat?.rapid.best ?? 0)
-                GameStatCard(title: "daily", rating: chessData.profileStat?.daily.current ?? 0, highest: chessData.profileStat?.daily.best ?? 0)
+                ForEach(timeClasses, id: \.self) { timeClass in
+                    let rating = chessData.profileStat?.getStat(for: timeClass)?.current ?? 0
+                    let highest = chessData.profileStat?.getStat(for: timeClass)?.best ?? 0
+                    GameStatCard(title: timeClass, rating: rating, highest: highest)
+                        .onDrag {
+                            self.draggedItem = timeClass
+                            return NSItemProvider(object: timeClass as NSString)
+                        }
+                        .onDrop(of: [UTType.text], delegate: DropViewDelegate(item: timeClass, items: $timeClasses, draggedItem: $draggedItem))
+
+                }
                 TimeCard(title: chessData.profileStat?.dateFetched.timeFormatted() ?? "00:00")
             }
             .padding()
         }
+    }
+}
+
+class DropViewDelegate: DropDelegate {
+    let item: String
+    @Binding var items: [String]
+    @Binding var draggedItem: String?
+    var destIndex: Int? = nil
+    
+    init(item: String, items: Binding<[String]>, draggedItem: Binding<String?>) {
+        self.item = item
+        self._items = items
+        self._draggedItem = draggedItem
+    }
+    
+    func performDrop(info: DropInfo) -> Bool {
+        print("Mic drop - Item: \(item). Dest: \(destIndex ?? -1). Dragged: \(draggedItem ?? "")")
+        guard let srcIndex = items.firstIndex(of: draggedItem!) else { return false }
+        withAnimation {
+            items.move(fromOffsets: IndexSet(integer: srcIndex), toOffset: destIndex! > srcIndex ? destIndex! + 1 : destIndex!)
+        }
+        Globals.shared.saveOrder(timeClasses: items)
+        draggedItem = nil
+        return true
+    }
+    
+    func dropEntered(info: DropInfo) {
+        guard let destinationIndex = items.firstIndex(of: item) else { return }
+        destIndex = destinationIndex
+        print("Item: \(item). Dest: \(destinationIndex). Dragged: \(draggedItem ?? "")")
     }
 }
 

@@ -35,6 +35,7 @@ struct ChessStatsApp: App {
         self.httpUtil = HttpUtil()
         self.persistenceManager = PersistenceManager(modelContext: modelContainer.mainContext)
         self.chessStatManager = ChessStatsManager(chessData: chessData, httpUtil: httpUtil, persistenceManager: persistenceManager)
+        Globals.shared.loadTimeClassSorting()
     }
         
     var body: some Scene {

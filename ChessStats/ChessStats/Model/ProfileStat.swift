@@ -40,6 +40,18 @@ class ProfileStat: Identifiable {
     var id: Date {
         dateFetched
     }
+    
+    func getStat(for type: String) -> TimeClassStats? {
+        switch type {
+        case "bullet": return bullet
+        case "blitz": return blitz
+        case "libullet": return libullet
+        case "liblitz": return liblitz
+        case "rapid": return rapid
+        case "daily": return daily
+        default: return nil
+        }
+    }
 }
 
 @Model

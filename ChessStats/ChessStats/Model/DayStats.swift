@@ -15,7 +15,7 @@ struct DayStats: Identifiable {
     init(date: Date, numberOfGames: Int, gameTypeStats: [DayGameTypeStats]) {
         self.date = date
         self.numberOfGames = numberOfGames
-        self.gameTypeStats = gameTypeStats.sorted { sorting[$0.timeClass] ?? 99 < sorting[$1.timeClass] ?? 99 }
+        self.gameTypeStats = gameTypeStats.sorted { Globals.shared.timeClassSorting.firstIndex(of: $0.timeClass) ?? 99 < Globals.shared.timeClassSorting.firstIndex(of: $1.timeClass) ?? 99 }
     }
     
     var id: Date {
@@ -52,6 +52,3 @@ struct DayGameTypeStats: Identifiable {
 
 
 let sampleDayStats = DayStats(date: Date(), numberOfGames: 145, gameTypeStats: [])
-
-private let sorting = ["bullet": 0, "blitz": 1, "rapid": 2, "libullet": 3, "liblitz": 4, "lirapid": 5, "daily": 6]
-let timeContorlToPlatform = ["bullet": "Chess.com", "blitz": "Chess.com", "rapid": "Chess.com", "libullet": "Lichess", "liblitz": "Lichess", "lirapid": "Lichess", "daily": "Chess.com"]
