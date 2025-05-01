@@ -116,20 +116,45 @@ class ChessStatsManager: ObservableObject {
         }
         
         if (Globals.shared.getSelectedPlatform() == "Both") {
+//            fetchUserGames(monthArchive: monthArchive) { (chessComGames, error) in
+//                if let games = chessComGames {
+//                    self.fetchLichessGames(monthArchive: monthArchive) { (lichessGames, error) in
+//                        if let liGames = lichessGames {
+//                            print("ChessCom: \(games.count), Lichess: \(liGames.count)")
+//                            self.buildDaysStats(monthArchive: monthArchive, games: games + liGames)
+//                            completion?(nil)
+//                        }
+//                        else {
+//                            completion?(error)
+//                        }
+//                    }
+//                }
+//                else {
+//                    completion?(error)
+//                }
+//            }
             fetchUserGames(monthArchive: monthArchive) { (chessComGames, error) in
                 if let games = chessComGames {
+                    // Build and display Chess.com data right away
+                    self.buildDaysStats(monthArchive: monthArchive, games: games)
+                    
+                    // Store Chess.com games for later combination
+                    let chessComGamesStore = games
+                    
+                    // Step 2: Fetch Lichess games after Chess.com data is displayed
                     self.fetchLichessGames(monthArchive: monthArchive) { (lichessGames, error) in
                         if let liGames = lichessGames {
-                            print("ChessCom: \(games.count), Lichess: \(liGames.count)")
-                            self.buildDaysStats(monthArchive: monthArchive, games: games + liGames)
+                            print("ChessCom: \(chessComGamesStore.count), Lichess: \(liGames.count)")
+                            // Update the display with combined data
+                            self.buildDaysStats(monthArchive: monthArchive, games: chessComGamesStore + liGames)
                             completion?(nil)
-                        }
-                        else {
-                            completion?(error)
+                        } else {
+                            // Even if Lichess fetch fails, we still have Chess.com data
+                            print("Failed to fetch Lichess games: \(error?.localizedDescription ?? "Unknown error")")
+                            completion?(nil) // Still consider overall operation successful
                         }
                     }
-                }
-                else {
+                } else {
                     completion?(error)
                 }
             }
