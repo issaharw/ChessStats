@@ -31,25 +31,29 @@ class ChessStatsManager: ObservableObject {
         
         httpUtil.fetchData(ofType: ProfileStatRecord.self, from: "https://api.chess.com/pub/player/issaharw/stats") { (data, error) in
             if let profileStat = data {
-                self.httpUtil.fetchLichessObject(ofType: LichessTimeClassStats.self, from: "https://lichess.org/api/user/issaharw/perf/bullet") { (data, error) in
-                    if let libullet = data {
+                self.httpUtil.fetchLichessObject(ofType: LichessTimeClassStats.self, from: "https://lichess.org/api/user/issaharw/perf/rapid") { (data, error) in
+                    if let lirapid = data {
                         self.httpUtil.fetchLichessObject(ofType: LichessTimeClassStats.self, from: "https://lichess.org/api/user/issaharw/perf/blitz") { (data, error) in
                             if let liblitz = data {
-                                DispatchQueue.main.async {
-                                    self.chessData.profileStat = ProfileStat(from: profileStat, libullet: libullet, liblitz: liblitz)
-                                    self.persistenceManager.saveProfileStat(stat: self.chessData.profileStat!)
-                                    completion?(nil)
+                                self.httpUtil.fetchLichessObject(ofType: LichessTimeClassStats.self, from: "https://lichess.org/api/user/issaharw/perf/bullet") { (data, error) in
+                                    if let libullet = data {
+                                        DispatchQueue.main.async {
+                                            self.chessData.profileStat = ProfileStat(from: profileStat, libullet: libullet, liblitz: liblitz, lirapid: lirapid)
+                                            self.persistenceManager.saveProfileStat(stat: self.chessData.profileStat!)
+                                            completion?(nil)
+                                        }
+                                    }
+                                }
+                                if let error = error {
+                                    debug("Error getting Profile Stat: \(error.localizedDescription)")
+                                    completion?(error)
                                 }
                             }
-                            if let error = error {
-                                debug("Error getting Profile Stat: \(error.localizedDescription)")
-                                completion?(error)
-                            }
                         }
-                    }
-                    if let error = error {
-                        debug("Error getting Profile Stat from Lichess: \(error.localizedDescription)")
-                        completion?(error)
+                        if let error = error {
+                            debug("Error getting Profile Stat from Lichess: \(error.localizedDescription)")
+                            completion?(error)
+                        }
                     }
                 }
             }

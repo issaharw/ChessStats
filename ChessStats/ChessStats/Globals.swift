@@ -12,7 +12,7 @@ struct Globals {
     static var shared = Globals()
         
     var refetchGamesNeeded = false
-    var timeClassSorting = ["bullet", "blitz", "rapid", "libullet", "liblitz", "daily"]
+    var timeClassSorting = ["rapid", "lirapid", "blitz", "liblitz", "bullet", "libullet", "daily"]
 //    var timeClassSorting = ["bullet", "blitz", "rapid", "libullet", "liblitz", "lirapid", "daily"]
 
     func getSelectedPlatform() -> String {

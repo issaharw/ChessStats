@@ -17,8 +17,9 @@ class ProfileStat: Identifiable {
     let blitz: TimeClassStats
     let libullet: TimeClassStats
     let liblitz: TimeClassStats
+    let lirapid: TimeClassStats
     
-    init(dateFetched: Date, daily: TimeClassStats, rapid: TimeClassStats, bullet: TimeClassStats, blitz: TimeClassStats, libullet: TimeClassStats, liblitz: TimeClassStats) {
+    init(dateFetched: Date, daily: TimeClassStats, rapid: TimeClassStats, bullet: TimeClassStats, blitz: TimeClassStats, libullet: TimeClassStats, liblitz: TimeClassStats, lirapid: TimeClassStats) {
         self.dateFetched = dateFetched
         self.daily = daily
         self.rapid = rapid
@@ -26,15 +27,17 @@ class ProfileStat: Identifiable {
         self.blitz = blitz
         self.libullet = libullet
         self.liblitz = liblitz
+        self.lirapid = lirapid
     }
     
-    convenience init(from: ProfileStatRecord, libullet: LichessTimeClassStats, liblitz: LichessTimeClassStats, dateFetched: Date = Date()) {
+    convenience init(from: ProfileStatRecord, libullet: LichessTimeClassStats, liblitz: LichessTimeClassStats, lirapid: LichessTimeClassStats, dateFetched: Date = Date()) {
         self.init(dateFetched: dateFetched, daily: TimeClassStats(from: from.daily, timeClass: "daily"),
                                             rapid: TimeClassStats(from: from.rapid, timeClass: "rapid"),
                                             bullet: TimeClassStats(from: from.bullet, timeClass: "bullet"),
                                             blitz: TimeClassStats(from: from.blitz, timeClass: "blitz"),
                                             libullet: TimeClassStats(from: libullet, timeClass: "libullet"),
-                                            liblitz: TimeClassStats(from: liblitz, timeClass: "liblitz"))
+                                            liblitz: TimeClassStats(from: liblitz, timeClass: "liblitz"),
+                                            lirapid: TimeClassStats(from: lirapid, timeClass: "lirapid"))
     }
     
     var id: Date {
@@ -45,9 +48,10 @@ class ProfileStat: Identifiable {
         switch type {
         case "bullet": return bullet
         case "blitz": return blitz
+        case "rapid": return rapid
         case "libullet": return libullet
         case "liblitz": return liblitz
-        case "rapid": return rapid
+        case "lirapid": return lirapid
         case "daily": return daily
         default: return nil
         }
@@ -458,7 +462,7 @@ func parseExampleJson(json: Data, lichessJson: Data) -> ProfileStat? {
     do {
         let stat = try decoder.decode(ProfileStatRecord.self, from: json)
         let lichessStat = try decoder.decode(LichessTimeClassStats.self, from: lichessJson)
-        return ProfileStat(from: stat, libullet: lichessStat, liblitz: lichessStat)
+        return ProfileStat(from: stat, libullet: lichessStat, liblitz: lichessStat, lirapid: lichessStat)
     } catch {
         print("Failed to decode JSON: \(error)")
         return nil
